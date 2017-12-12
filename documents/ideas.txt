@@ -1,0 +1,5 @@
+- "Isolating": presentar certs conceptes en entorns fàcils i controlats, per tornar-los a trobar en tot el seu esplendor en el joc
+- Ensenyar la història de Barathra sense explicar-la (i sense llibres, no és Skyrim, ni notes de veu)
+- Recompenses amagades
+- Permetre una evolució del personatge, i rejugabilitat de zones
+- Fer sentir llibertat, fer sentir que el jugador és poderós

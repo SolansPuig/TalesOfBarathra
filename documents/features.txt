@@ -1,0 +1,6 @@
+- "flow"
+- Es pot guardar en qualsevol moment, però consumeix energia o alguna altra cosa
+- Molts items que afegeixen molta jugabilitat
+
+- Les accions són permanents
+- Sistema de moral REAL
