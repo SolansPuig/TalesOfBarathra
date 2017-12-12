@@ -5,19 +5,18 @@
 #include <assert.h>
 #include "sprite.h"
 
-extern world_t world;
-
 typedef enum { UPDIR, DOWNDIR, LEFTDIR, RIGHTDIR } directions_t;
-typedef enum {FORWARD, LEFT, RIGHT, BACKWARD} anim_t;
+typedef enum { FORWARD, LEFT, RIGHT, BACKWARD } anim_t;
 typedef enum { PLAYER, COMPLEX_IA, SIMPLE_IA, PROP, TILE } entity_type_t;
 
 typedef enum {
     COMPONENT_NONE = 0,
     COMPONENT_POSITION = 1 << 0,
-    COMPONENT_VELOCITY = 1 << 1,
+    COMPONENT_SPEED = 1 << 1,
     COMPONENT_VIEW = 1 << 2,
     COMPONENT_ANIMATION = 1 << 3,
-    COMPONENT_PHYSICS = 1 << 4
+    COMPONENT_PHYSICS = 1 << 4,
+    COMPONENT_TIMER = 1 << 5
 } component_t;
 
 typedef struct {
@@ -40,6 +39,7 @@ typedef struct {
     int timerId;
     int frame;
     int anim_cycle[4];
+    int speed;
 } component_animation_t;
 
 typedef struct {
@@ -55,14 +55,16 @@ typedef struct {
 } component_timer_t;
 
 typedef struct {
-    int mask [MAX_ENTITYS];
+    long mask [MAX_ENTITYS];
     component_position_t position[MAX_ENTITYS];
     component_speed_t speed[MAX_ENTITYS];
     component_view_t view[MAX_ENTITYS];
-    component_animation_t animaiton[MAX_ENTITYS];
+    component_animation_t animation[MAX_ENTITYS];
     component_physics_t physics[MAX_ENTITYS];
     component_timer_t timer[MAX_ENTITYS];
 } world_t;
+
+extern world_t * world;
 
 
 // CREATION AND DESTRUCTION FUNCTIONS
@@ -134,18 +136,30 @@ void entity_destroy_view(int id);
 
 
 // ANIMATION FUNCTIONS
+void entity_init_animation(int id, int frame, int * anim_cycle, int speed);
+// Inits the animation component.
+//     id is the id of the entity to animate.
+//     frame is the initial frame.
+//     anim_cycle is the animation cycle (like {0, 1, 2, 1}).
+//     speed is the speed of the animation.
+
 void entity_set_animation(int id, anim_t animation);
 // Starts the animation of the sprite.
 //     id is the id of the entity to animate.
 //     animation is one of {FORWARD, LEFT, RIGHT, BACKWARD}.
 
-void entity_stop_animation(int id);
-// Stops the animation of the sprite and sets its frame to the base frame.
-//     id is the id of the entity to un-animate.
-
 void entity_freeze_animation(int id);
 // Stops the animation of the sprite and sets its frame to the current frame.
 //     id is the id of the entity to freeze.
+
+void entity_stop_animation_at(int id, int frame);
+// Stops the animation of the sprite and sets its frame to the specified one.
+//     id is the id of the entity to un-animate.
+//     the frame where to stop the animation.
+
+void entity_stop_animation(int id);
+// Stops the animation of the sprite and sets its frame to the base frame.
+//     id is the id of the entity to un-animate.
 
 
 // PHYSICS FUNCTIONS
@@ -154,7 +168,7 @@ void entity_set_solid(int id, bool solid);
 //     id is the id of the entity to set or clear.
 //     solid is whether the entity blocks movement or not
 
-void entity_set_size(int id, uint8_t w, uint8_t h);
+void entity_set_size(int id, int w, int h);
 // Sets the entity's real size (for the collisions).
 //     id is the id of the entity to which to set the size.
 //     w and h are the real size.

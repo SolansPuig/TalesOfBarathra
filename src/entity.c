@@ -1,12 +1,11 @@
 #include <stdio.h>
 #include "entity.h"
 
-static world_t world;
+world_t * world;
 
 // CREATION AND DESTRUCTION FUNCTIONS
 void world_create(void) {
     world = malloc(sizeof(world_t));
-    return world;
 }
 
 int entity_get_empty_id(entity_type_t entity_type) {
@@ -27,7 +26,7 @@ void entity_mark_destroyed(int id) {
 }
 
 int entity_create(float x, float y, float z, entity_type_t entity_type) {
-    int id = entity_get_empty_id(world, entity_type);
+    int id = entity_get_empty_id(entity_type);
     world->mask[id] = COMPONENT_POSITION;
     world->position[id].x = x;
     world->position[id].y = y;
@@ -37,8 +36,8 @@ int entity_create(float x, float y, float z, entity_type_t entity_type) {
 }
 
 void entity_destroy(int id) {
-    entity_destroy_view(world, id);
-    entity_mark_destroyed(world, id);
+    entity_destroy_view(id);
+    entity_mark_destroyed(id);
 }
 
 
@@ -73,55 +72,55 @@ void entity_set_z(int id, float z) {
 // SPEED FUNCTIONS
 void entity_set_speed(int id, directions_t dir, float qty) {
     assert(world->mask[id] != COMPONENT_NONE);
-    component_velocity_t *vel = &(world->velocity[id]);
+    component_speed_t *speed = &(world->speed[id]);
     switch (dir) {
         case UPDIR: {
-            vel->y = -qty;
+            speed->y = -qty;
             break;
         }
         case DOWNDIR: {
-            vel->y = qty;
+            speed->y = qty;
             break;
         }
         case LEFTDIR: {
-            vel->x = -qty;
+            speed->x = -qty;
             break;
         }
         case RIGHTDIR: {
-            vel->x = qty;
+            speed->x = qty;
             break;
         }
     }
-    world->mask[id] |= COMPONENT_VELOCITY;
+    world->mask[id] |= COMPONENT_SPEED;
 }
 
 void entity_stop_speed(int id, directions_t dir) {
     assert(world->mask[id] != COMPONENT_NONE);
-    if ((world->mask[id] & COMPONENT_VELOCITY) == COMPONENT_VELOCITY) {
-        component_velocity_t *vel = &(world->velocity[id]);
-        // Stop the required axis velocity if active
+    if ((world->mask[id] & COMPONENT_SPEED) == COMPONENT_SPEED) {
+        component_speed_t *speed = &(world->speed[id]);
+        // Stop the required axis speed if active
         switch (dir) {
             case UPDIR: {
-                if (vel->y < 0) vel->y = 0;
+                if (speed->y < 0) speed->y = 0;
                 break;
             }
             case DOWNDIR: {
-                if (vel->y > 0) vel->y = 0;
+                if (speed->y > 0) speed->y = 0;
                 break;
             }
             case LEFTDIR: {
-                if (vel->x < 0) vel->x = 0;
+                if (speed->x < 0) speed->x = 0;
                 break;
             }
             case RIGHTDIR: {
-                if (vel->x > 0) vel->x = 0;
+                if (speed->x > 0) speed->x = 0;
                 break;
             }
         }
 
-        // If all velocitys 0, mark the component as unused
-        if (vel->x == 0 && vel->y == 0) {
-            world->mask[id] ^= COMPONENT_VELOCITY;
+        // If all speeds 0, mark the component as unused
+        if (speed->x == 0 && speed->y == 0) {
+            world->mask[id] ^= COMPONENT_SPEED;
         }
     }
 }
@@ -147,7 +146,66 @@ void entity_destroy_view(int id) {
     world->mask[id] ^= COMPONENT_VIEW;
 }
 
-void entity_set_solid(world_t *world, int id, bool solid) {
+
+
+// ANIMATION FUNCTIONS
+void entity_init_animation(int id, int frame, int * anim_cycle, int speed) {
+    assert(world->mask[id] != COMPONENT_NONE);
+    component_animation_t *animation = &(world->animation[id]);
+    animation->speed = 2000 - speed;
+    animation->frame = frame;
+    memcpy(animation->anim_cycle, anim_cycle, 4);
+}
+
+void entity_set_animation(int id, anim_t anim_type) {
+    assert(world->mask[id] != COMPONENT_NONE);
+
+    if ((world->mask[id] & COMPONENT_VIEW) == COMPONENT_VIEW) {
+        component_view_t *view = &(world->view[id]);
+        int i, types[25];
+        for (i = 0; i < 25; i++) {
+             types[i] = anim_type;
+        }
+        sprite_change_types(view->spr, &types[0]);
+    }
+
+    entity_set_timer(id, -1, NULL);
+
+    world->mask[id] |= COMPONENT_ANIMATION;
+}
+
+void entity_freeze_animation(int id) {
+    assert(world->mask[id] != COMPONENT_NONE);
+    component_animation_t *animation = &(world->animation[id]);
+
+    entity_cancel_timer(id, animation->timerId);
+
+    world->mask[id] ^= COMPONENT_ANIMATION;
+}
+
+void entity_stop_animation_at(int id, int frame) {
+    entity_freeze_animation(id);
+    assert(world->mask[id] != COMPONENT_NONE);
+    component_animation_t *animation = &(world->animation[id]);
+    component_view_t *view = &(world->view[id]);
+
+    animation->frame = frame % 4;
+
+    int i, vars[25];
+    for (i = 0; i < (view->spr->w_spr * view->spr->h_spr); i++) {
+        vars[i] = animation->anim_cycle[animation->frame];
+    }
+    sprite_change_variations(view->spr, &vars[0]);
+}
+
+void entity_stop_animation(int id) {
+    entity_stop_animation_at(id, 0);
+}
+
+
+
+// PHYSICS FUNCTIONS
+void entity_set_solid(int id, bool solid) {
     assert(world->mask[id] != COMPONENT_NONE);
     component_physics_t *physics = &(world->physics[id]);
     physics->solid = solid;
@@ -155,23 +213,7 @@ void entity_set_solid(world_t *world, int id, bool solid) {
     world->mask[id] |= COMPONENT_PHYSICS;
 }
 
-
-// ANIMATION FUNCTIONS
-void entity_init_animation(int id, int speed) {
-
-}
-
-void entity_set_animation(int id, anim_t anim_type) {
-    assert(world->mask[id] != COMPONENT_NONE);
-
-    if (world->mask[id] & COMPONENT_VIEW) == COMPONENT_VIEW) {
-        component_view_t *view = &(world->view[id]);
-        sprite_change_types(view->spr, anim_type);
-    }
-    world->mask[id] |= COMPONENT_ANIMATION;
-}
-
-void entity_set_size(world_t *world, int id, uint8_t w, uint8_t h) {
+void entity_set_size(int id, int w, int h) {
     assert(world->mask[id] != COMPONENT_NONE);
     component_physics_t *physics = &(world->physics[id]);
     physics->w = w;
@@ -180,7 +222,88 @@ void entity_set_size(world_t *world, int id, uint8_t w, uint8_t h) {
     world->mask[id] |= COMPONENT_PHYSICS;
 }
 
-bool entity_overlaps(world_t *world, int id1, int id2) {
+
+
+// TIMER FUNCTIONS
+int entity_set_timer(int id, long time, void (*callback)(int)) {
+    assert(world->mask[id] != COMPONENT_NONE);
+    component_timer_t *timer = &(world->timer[id]);
+    int i;
+    for (i = 0; i < 12; i++) {
+        if (timer->timers[i] == 0) {
+            timer->counts[i] = 0;
+            timer->timers[i] = time;
+            //timer->callbacks[i] = callback;
+            break;
+        }
+    }
+
+    world->mask[id] |= COMPONENT_TIMER;
+    return i;
+}
+
+long entity_read_timer(int id, int timerId) {
+    assert(world->mask[id] != COMPONENT_NONE);
+    component_timer_t *timer = &(world->timer[id]);
+
+    return timer->counts[timerId];
+}
+
+long entity_cancel_timer(int id, int timerId) {
+    assert(world->mask[id] != COMPONENT_NONE);
+    component_timer_t *timer = &(world->timer[id]);
+    long c = timer->counts[timerId];
+    timer->counts[timerId] = 0;
+    timer->timers[timerId] = 0;
+    timer->callbacks[timerId] = NULL;
+
+    int i;
+    for (i = 0; i < 12; i++) {
+        if (timer->timers[i] != 0) {
+            return c;
+        }
+    }
+
+    world->mask[id] ^= COMPONENT_TIMER;
+    return c;
+}
+
+
+// SYSTEMS
+void entitys_timer() {
+    component_timer_t *timer;
+
+    // Set all the entity with timer component  ids to an array
+    int id;
+    for (id = 0; id < MAX_ENTITYS; id++) {
+        if ((world->mask[id] & COMPONENT_TIMER) == COMPONENT_TIMER) {
+            timer = &(world->timer[id]);
+            int i;
+            for (i = 0; i < 12; i++) {
+                if (timer->timers[i] != 0) {
+                    timer->counts[i]++;
+                    if (timer->counts[i] >= timer->timers[i]) {
+                        timer->counts[i] = 0;
+                        timer->timers[i] = -1;
+                        //timer->callbacks[i](id);
+                        timer->callbacks[i] = NULL;
+                    }
+                }
+             }
+
+             bool none = true;
+             for (i = 0; i < 12; i++) {
+                 if (timer->timers[i] != 0) {
+                     none = false;
+                     break;
+                 }
+             }
+             if (none) world->mask[id] ^= COMPONENT_TIMER;
+        }
+    }
+}
+
+bool entity_overlaps(int id1, int id2) {
     assert(world->mask[id1] != COMPONENT_NONE);
     assert(world->mask[id2] != COMPONENT_NONE);
 
@@ -204,11 +327,11 @@ bool entity_overlaps(world_t *world, int id1, int id2) {
             y_top_2 < y_bot_1 );
 }
 
-bool entity_can_move(world_t *world, int id) {
+bool entity_can_move(int id) {
     int i;
     for (i = 0; i < MAX_ENTITYS; i++) {
         if (i != id && (world->mask[i] & COMPONENT_PHYSICS) == COMPONENT_PHYSICS) {
-            if (entity_overlaps(world, id, i)) {
+            if (entity_overlaps(id, i)) {
                 component_physics_t *phys1 = &(world->physics[id]);
                 component_physics_t *phys2 = &(world->physics[i]);
 
@@ -221,52 +344,50 @@ bool entity_can_move(world_t *world, int id) {
     return true;
 }
 
-void entitys_move(world_t *world) {
-    int id;
+void entitys_move() {
     component_position_t *pos;
-    component_velocity_t *vel;
+    component_speed_t *speed;
     component_view_t *view;
-
+    int id;
     for (id = 0; id < MAX_ENTITYS; id++) {
-        if ((world->mask[id] & COMPONENT_VELOCITY) == COMPONENT_VELOCITY) {
+        if ((world->mask[id] & COMPONENT_SPEED) == COMPONENT_SPEED) {
             pos = &(world->position[id]);
-            vel = &(world->velocity[id]);
+            speed = &(world->speed[id]);
             view = &(world->view[id]);
 
             // Update the position if can move
             float old_x = pos->x;
-            pos->x += vel->x;
-            if (!entity_can_move(world, id)) pos->x = old_x;
+            pos->x += speed->x;
+            if (!entity_can_move(id)) pos->x = old_x;
 
 
             float old_y = pos->y;
-            pos->y += vel->y;
-            if (!entity_can_move(world, id)) pos->y = old_y;
+            pos->y += speed->y;
+            if (!entity_can_move(id)) pos->y = old_y;
 
-        //     // Update the animation
-        //     if ((world->mask[id] & COMPONENT_VIEW) == COMPONENT_VIEW) {
-        //         if (vel->x > 0) sprite_change_animation(view->spr, RIGHT);
-        //         if (vel->x < 0) sprite_change_animation(view->spr, LEFT);
-        //         if (vel->y > 0) sprite_change_animation(view->spr, FORWARD);
-        //         if (vel->y < 0) sprite_change_animation(view->spr, BACKWARD);
-        //         sprite_animate(view->spr);
-        //     }
-        // } else {
-        //     // Stop the animation
-        //     if ((world->mask[id] & COMPONENT_VIEW) == COMPONENT_VIEW) {
-        //         view = &(world->view[id]);
-        //         sprite_stop_animation(view->spr, view->spr->defaultFrame);
-        //     }
+            // Update the animation
+            if ((world->mask[id] & COMPONENT_VIEW) == COMPONENT_VIEW) {
+                if (speed->x > 0) entity_set_animation(id, RIGHT);
+                if (speed->x < 0) entity_set_animation(id, LEFT);
+                if (speed->y > 0) entity_set_animation(id, FORWARD);
+                if (speed->y < 0) entity_set_animation(id, BACKWARD);
+            }
+        } else {
+            // Stop the animation
+            if ((world->mask[id] & COMPONENT_VIEW) == COMPONENT_VIEW) {
+                view = &(world->view[id]);
+                entity_stop_animation(id);
+            }
         }
     }
 }
 
-void entitys_render(world_t *world, screen_t *screen) {
-    int id;
+void entitys_render() {
     component_position_t *pos;
     component_view_t *view;
 
     // Set all the entity with view component  ids to an array
+    int id;
     for (id = 0; id < MAX_ENTITYS; id++) {
         if ((world->mask[id] & COMPONENT_VIEW) == COMPONENT_VIEW) {
             pos = &(world->position[id]);
@@ -278,13 +399,18 @@ void entitys_render(world_t *world, screen_t *screen) {
 }
 
 void entitys_animate() {
+    component_animation_t *animation;
+    component_view_t *view;
+    int id;
     for (id = 0; id < MAX_ENTITYS; id++) {
-        if ((world->mask[id] & COMPONENT_ANIMATION) == COMPONENT_ANIMATION && world->mask[id] & COMPONENT_VIEW) == COMPONENT_VIEW) {
-            component_animation_t *animation = &(world->animation[id]);
-            component_view_t *view = &(world->view[id]);
+        if ((world->mask[id] & COMPONENT_ANIMATION) == COMPONENT_ANIMATION) {
+            animation = &(world->animation[id]);
+            view = &(world->view[id]);
+            printf("Hi\n");
 
             long delta = entity_read_timer(id, animation->timerId);
             if (delta >= animation->speed) {
+                printf("%ld %d\n", delta, animation->speed);
                 entity_cancel_timer(id, animation->timerId);
                 animation->frame = (animation->frame + 1) % 4;
 
@@ -292,7 +418,7 @@ void entitys_animate() {
                 for (i = 0; i < (view->spr->w_spr * view->spr->h_spr); i++) {
                     vars[i] = animation->anim_cycle[animation->frame];
                 }
-                sprite_change_variations(view->spr, &vars);
+                sprite_change_variations(view->spr, &vars[0]);
 
                 entity_set_timer(id, -1, NULL);
             } else if (delta == 0) {

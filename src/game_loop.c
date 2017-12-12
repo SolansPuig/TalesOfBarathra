@@ -9,7 +9,6 @@
 
 static int player;
 static bool done;
-static world_t *world;
 bool debug;
 
 void get_input() {
@@ -31,19 +30,19 @@ void get_input() {
                     break;
                 }
                 case SDLK_UP: {
-                    entity_set_velocity(world, player, UPDIR, 1);
+                    entity_set_speed(player, UPDIR, 1);
                     break;
                 }
                 case SDLK_DOWN: {
-                    entity_set_velocity(world, player, DOWNDIR, 1);
+                    entity_set_speed(player, DOWNDIR, 1);
                     break;
                 }
                 case SDLK_LEFT: {
-                    entity_set_velocity(world, player, LEFTDIR, 1);
+                    entity_set_speed(player, LEFTDIR, 1);
                     break;
                 }
                 case SDLK_RIGHT: {
-                    entity_set_velocity(world, player, RIGHTDIR, 1);
+                    entity_set_speed(player, RIGHTDIR, 1);
                     break;
                 }
             }
@@ -52,19 +51,19 @@ void get_input() {
             SDL_Keycode key = event.key.keysym.sym;
             switch (key) {
                 case SDLK_UP: {
-                    entity_stop_velocity(world, player, UPDIR);
+                    entity_stop_speed(player, UPDIR);
                     break;
                 }
                 case SDLK_DOWN: {
-                    entity_stop_velocity(world, player, DOWNDIR);
+                    entity_stop_speed(player, DOWNDIR);
                     break;
                 }
                 case SDLK_LEFT: {
-                    entity_stop_velocity(world, player, LEFTDIR);
+                    entity_stop_speed(player, LEFTDIR);
                     break;
                 }
                 case SDLK_RIGHT: {
-                    entity_stop_velocity(world, player, RIGHTDIR);
+                    entity_stop_speed(player, RIGHTDIR);
                     break;
                 }
             }
@@ -73,49 +72,58 @@ void get_input() {
 }
 
 void update() {
-    entitys_move(world);
+    // Update all the timers
+    entitys_timer();
+
+    // Move all the entities
+    entitys_move();
+
+    // Animate all the entities
+    entitys_animate();
 }
 
 void render() {
     // Prepare all the sprites to render
-    entitys_render(world, screen);
+    entitys_render();
 
     // Render and clear
-    graphics_show_and_clear(screen);
+    graphics_show_and_clear();
 }
 
 int main (void) {
     debug = false;
-    world = world_create();
+    world_create();
     graphics_open_window("Tales of Barathra", 1200, 780);
     img_t *knights = graphics_load_image("assets/knight_factions_1.png", 26, 36, 4, 3, 4);
     img_t *ground = graphics_load_image("assets/grounds.png", 16, 16, 1, 18, 2);
 
-    player = entity_create(world, 20, 40, 1, PLAYER);
-    entity_set_view(world, player, knights, 0);
-    entity_set_solid(world, player, true);
-    entity_set_size(world, player, 12, 6);
+    player = entity_create(20, 40, 1, PLAYER);
+    entity_set_view(player, knights, 0);
+    entity_set_solid(player, true);
+    entity_set_size(player, 12, 6);
+    int anim_cycle[4] = {0, 1, 2, 1};
+    entity_init_animation(player, 1, &anim_cycle[0], 1700);
 
-    int knight = entity_create(world, 300, 200, 1, COMPLEX_IA);
-    entity_set_view(world, knight, knights, 3);
-    entity_set_solid(world, knight, true);
-    entity_set_size(world, knight, 12, 6);
-
-    knight = entity_create(world, 300, 150, 1, COMPLEX_IA);
-    entity_set_view(world, knight, knights, 1);
-    entity_set_solid(world, knight, true);
-    entity_set_size(world, knight, 12, 6);
-
-    entity_set_velocity(world, 1, LEFTDIR, 0.5);
-
-    int tile = entity_create(world, 15, 30, 0, TILE);
-    entity_set_view_tile(world, tile, ground, 0, 0);
-    tile = entity_create(world, 47, 30, 0, TILE);
-    entity_set_view_tile(world, tile, ground, 1, 0);
-    tile = entity_create(world, 79, 30, 0, TILE);
-    entity_set_view_tile(world, tile, ground, 2, 0);
-    tile = entity_create(world, 111, 30, 0, TILE);
-    entity_set_view_tile(world, tile, ground, 3, 0);
+    // int knight = entity_create(world, 300, 200, 1, COMPLEX_IA);
+    // entity_set_view(world, knight, knights, 3);
+    // entity_set_solid(world, knight, true);
+    // entity_set_size(world, knight, 12, 6);
+    //
+    // knight = entity_create(world, 300, 150, 1, COMPLEX_IA);
+    // entity_set_view(world, knight, knights, 1);
+    // entity_set_solid(world, knight, true);
+    // entity_set_size(world, knight, 12, 6);
+    //
+    // entity_set_velocity(world, 1, LEFTDIR, 0.5);
+    //
+    // int tile = entity_create(world, 15, 30, 0, TILE);
+    // entity_set_view_tile(world, tile, ground, 0, 0);
+    // tile = entity_create(world, 47, 30, 0, TILE);
+    // entity_set_view_tile(world, tile, ground, 1, 0);
+    // tile = entity_create(world, 79, 30, 0, TILE);
+    // entity_set_view_tile(world, tile, ground, 2, 0);
+    // tile = entity_create(world, 111, 30, 0, TILE);
+    // entity_set_view_tile(world, tile, ground, 3, 0);
 
     double lag = 0.0;
     done = false;
