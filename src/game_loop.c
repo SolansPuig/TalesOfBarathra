@@ -1,13 +1,12 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <time.h>
-#include "externals.h"
+#include "globals.h"
 #include "sprite.h"
 #include "entity.h"
 
 #define MS_PER_UPDATE 16
 
-static screen_t *screen;
 static int player;
 static bool done;
 static world_t *world;
@@ -88,29 +87,35 @@ void render() {
 int main (void) {
     debug = false;
     world = world_create();
-    screen = graphics_open_window("Tales of Barathra", 1200, 780);
-    img_t *knights = graphics_load_image(screen, "assets/knight_factions_1.png", 26, 36, 3, 3, 4);
-    img_t *ground = graphics_load_image(screen, "assets/grounds.png", 16, 16, 18, 1, 1);
+    graphics_open_window("Tales of Barathra", 1200, 780);
+    img_t *knights = graphics_load_image("assets/knight_factions_1.png", 26, 36, 4, 3, 4);
+    img_t *ground = graphics_load_image("assets/grounds.png", 16, 16, 1, 18, 2);
 
-    player = entity_create(world, 20, 40, 0.5, PLAYER);
+    player = entity_create(world, 20, 40, 1, PLAYER);
     entity_set_view(world, player, knights, 0);
     entity_set_solid(world, player, true);
     entity_set_size(world, player, 12, 6);
 
-    int knight = entity_create(world, 300, 200, 0.5, COMPLEX_IA);
-    entity_set_view(world, knight, knights, 1);
+    int knight = entity_create(world, 300, 200, 1, COMPLEX_IA);
+    entity_set_view(world, knight, knights, 3);
     entity_set_solid(world, knight, true);
     entity_set_size(world, knight, 12, 6);
 
-    knight = entity_create(world, 300, 150, 0.5, COMPLEX_IA);
+    knight = entity_create(world, 300, 150, 1, COMPLEX_IA);
     entity_set_view(world, knight, knights, 1);
     entity_set_solid(world, knight, true);
     entity_set_size(world, knight, 12, 6);
 
     entity_set_velocity(world, 1, LEFTDIR, 0.5);
 
-    int tile = entity_create(world, 30, 30, 0, TILE);
+    int tile = entity_create(world, 15, 30, 0, TILE);
+    entity_set_view_tile(world, tile, ground, 0, 0);
+    tile = entity_create(world, 47, 30, 0, TILE);
+    entity_set_view_tile(world, tile, ground, 1, 0);
+    tile = entity_create(world, 79, 30, 0, TILE);
     entity_set_view_tile(world, tile, ground, 2, 0);
+    tile = entity_create(world, 111, 30, 0, TILE);
+    entity_set_view_tile(world, tile, ground, 3, 0);
 
     double lag = 0.0;
     done = false;

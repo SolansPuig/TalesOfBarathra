@@ -34,7 +34,7 @@ void entity_destroy(world_t *world, int id) {
 }
 
 world_t * world_create(void) {
-    world_t *world = malloc(sizeof(world_t));
+    world_t * world = malloc(sizeof(world_t));
     return world;
 }
 
@@ -106,8 +106,9 @@ void entity_stop_velocity(world_t *world, int id, directions_t dir) {
 void entity_set_view(world_t *world, int id, img_t *img, uint8_t type) {
     assert(world->mask[id] != COMPONENT_NONE);
     component_view_t *view = &(world->view[id]);
-    uint8_t types[25] = {type};
-    view->spr = sprite_create(img, types, 1, FORWARD, 1, 1);
+    int types[25] = {0};
+    int variations[25] = {1};
+    view->spr = sprite_create(img, 1, 1, type, types, variations);
 
     world->mask[id] |= COMPONENT_VIEW;
 }
@@ -115,9 +116,11 @@ void entity_set_view(world_t *world, int id, img_t *img, uint8_t type) {
 void entity_set_view_tile(world_t *world, int id, img_t *img, uint8_t terrain, uint8_t variation) {
     assert(world->mask[id] != COMPONENT_NONE);
     component_view_t *view = &(world->view[id]);
-    uint8_t type = (terrain * img->typesPerRow) + variation;
-    uint8_t types[25] = {type, type, type, type};
-    view->spr = sprite_create(img, types, 0, 0, 2, 2);
+    int type = terrain;
+    printf("%d\n", type);
+    int types[25] = {0, 0, 0, 0};
+    int variations[25] = {0, 1, 2, 3};
+    view->spr = sprite_create(img, 2, 2, type, types, variations);
 
     world->mask[id] |= COMPONENT_VIEW;
 }
@@ -210,40 +213,22 @@ void entitys_move(world_t *world) {
             pos->y += vel->y;
             if (!entity_can_move(world, id)) pos->y = old_y;
 
-            // Update the animation
-            if ((world->mask[id] & COMPONENT_VIEW) == COMPONENT_VIEW) {
-                if (vel->x > 0) sprite_change_animation(view->spr, RIGHT);
-                if (vel->x < 0) sprite_change_animation(view->spr, LEFT);
-                if (vel->y > 0) sprite_change_animation(view->spr, FORWARD);
-                if (vel->y < 0) sprite_change_animation(view->spr, BACKWARD);
-                sprite_animate(view->spr);
-            }
-        } else {
-            // Stop the animation
-            if ((world->mask[id] & COMPONENT_VIEW) == COMPONENT_VIEW) {
-                view = &(world->view[id]);
-                sprite_stop_animation(view->spr, view->spr->defaultFrame);
-            }
+        //     // Update the animation
+        //     if ((world->mask[id] & COMPONENT_VIEW) == COMPONENT_VIEW) {
+        //         if (vel->x > 0) sprite_change_animation(view->spr, RIGHT);
+        //         if (vel->x < 0) sprite_change_animation(view->spr, LEFT);
+        //         if (vel->y > 0) sprite_change_animation(view->spr, FORWARD);
+        //         if (vel->y < 0) sprite_change_animation(view->spr, BACKWARD);
+        //         sprite_animate(view->spr);
+        //     }
+        // } else {
+        //     // Stop the animation
+        //     if ((world->mask[id] & COMPONENT_VIEW) == COMPONENT_VIEW) {
+        //         view = &(world->view[id]);
+        //         sprite_stop_animation(view->spr, view->spr->defaultFrame);
+        //     }
         }
     }
-}
-
-static world_t *w;
-
-int zorder (const void * elem1, const void * elem2) {
-    float z1 = w->position[*((int*)elem1)].z;
-    float z2 = w->position[*((int*)elem2)].z;
-
-    if (z1 > z2) return 1;
-    if (z1 < z2) return -1;
-
-    float y1 = w->position[*((int*)elem1)].y;
-    float y2 = w->position[*((int*)elem2)].y;
-
-    if (y1 > y2) return 1;
-    if (y1 < y2) return -1;
-
-    return 0;
 }
 
 void entitys_render(world_t *world, screen_t *screen) {
@@ -251,31 +236,14 @@ void entitys_render(world_t *world, screen_t *screen) {
     component_position_t *pos;
     component_view_t *view;
 
-    int zbuffer[MAX_ENTITYS];
-    int zindex = 0;
-
     // Set all the entity with view component  ids to an array
     for (id = 0; id < MAX_ENTITYS; id++) {
         if ((world->mask[id] & COMPONENT_VIEW) == COMPONENT_VIEW) {
-            zbuffer[zindex] = id;
-            zindex++;
+            pos = &(world->position[id]);
+            view = &(world->view[id]);
+            sprite_render(view->spr, pos->x, pos->y, pos->z);
+            //if (debug) graphics_draw_point(screen, pos->x, pos->y);
         }
-    }
-
-    // Sort the array based on the z-layer
-    w = world;
-    qsort(zbuffer, zindex, sizeof(*zbuffer), zorder);
-
-    // Render every sprite in the array
-    int i;
-    for (i = 0; i < zindex; i++) {
-        id = zbuffer[i];
-
-        pos = &(world->position[id]);
-        view = &(world->view[id]);
-
-        sprite_render(screen, view->spr, pos->x, pos->y);
-        if (debug) graphics_draw_point(screen, pos->x, pos->y);
     }
 }
 

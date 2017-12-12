@@ -1,24 +1,15 @@
 #include <stdbool.h>
 #include "sprite.h"
 
-spr_t * sprite_create(img_t *img, const uint8_t types[25], uint8_t frame, anim_t animation, uint8_t w, uint8_t h) {
+spr_t * sprite_create(img_t *img, int w_spr, int h_spr, int sheet, const int types[25], const int variations[25]) {
     spr_t *spr = malloc(sizeof(spr_t));
 
-    // Important
     spr->img = img;
+    spr->w_spr = w_spr;
+    spr->h_spr = h_spr;
+    spr->sheet = sheet;
     memcpy(spr->types, types, 25);
-    spr->w = w;
-    spr->h = h;
-
-    // Animation
-    spr->animation = animation;
-    spr->anim_count = 0;
-    spr->animated = false;
-    spr->frame = frame;
-    spr->defaultFrame = frame;
-    spr->speed = 350;
-    uint8_t anim_cycle_default[4] = {0, 1, 2, 1};
-    memcpy(spr->anim_cycle, anim_cycle_default, sizeof(anim_cycle_default));
+    memcpy(spr->variations, variations, 25);
 
     return spr;
 }
@@ -27,42 +18,27 @@ void sprite_destroy(spr_t * spr) {
     free(spr);
 }
 
-void sprite_render(screen_t *screen, spr_t *spr, int16_t x, int16_t y) {
-    if (spr->animated) {
-        if (SDL_GetTicks() - spr->anim_count >= (500 - spr->speed)) {
-            spr->anim_count = SDL_GetTicks();
-            spr->frame = (spr->frame + 1) % 4;
-        }
-    }
-
+void sprite_render(spr_t *spr, int x, int y, int z) {
     int i, j;
-    for (i = 0; i < spr->w; i++) {
-        for (j = 0; j < spr->h; j++) {
-            uint16_t t = j*spr->w + i;
-            uint16_t src_x = spr->anim_cycle[spr->frame] + spr->img->n_frames * (spr->types[t] % spr->img->typesPerRow);
-            uint16_t src_y = spr->animation + spr->img->n_animations * (spr->types[t] / spr->img->typesPerRow);
+    for (i = 0; i < spr->w_spr; i++) {
+        for (j = 0; j < spr->h_spr; j++) {
+            img_t *img = spr->img;
+
+            int t = j*spr->w_spr + i; // Get the inline index corresponding to that i and j
+
+            // Select the tile corresponding to the sheet, type and variation.
+            int sheet_x = (spr->sheet % img->n_sheets_row) * img->w_sheet;
+            int sheet_y = (spr->sheet / img->n_sheets_row) * img->h_sheet;
+            int variation = spr->variations[t];
+            int type = spr->types[t];
+            int src_x = (sheet_x + variation);
+            int src_y = (sheet_y + type);
 
             // Set the draw offset so the x, y are in the middle of the hitbox
-            int16_t dest_x = (x - (spr->w * spr->img->w / 2) + 1) + (i * spr->img->w);
-            int16_t dest_y = (y - (spr->h * spr->img->h / 2) + 1) + (j * spr->img->h);
-            graphics_render_texture(screen, spr->img, src_x, src_y, dest_x, dest_y);
+            int16_t dest_x = (x - (spr->w_spr * img->w_tile / 2) + 1) + (i * img->w_tile);
+            int16_t dest_y = (y - (spr->h_spr * img->h_tile / 2) + 1) + (j * img->h_tile);
+
+            graphics_render_texture(img, src_x, src_y, dest_x, dest_y, y, z);
         }
     }
-}
-
-void sprite_freeze(spr_t *spr) {
-    spr->animated = false;
-}
-
-void sprite_stop_animation(spr_t *spr, uint8_t frame) {
-    spr->animated = false;
-    spr->frame = frame;
-}
-
-void sprite_animate(spr_t *spr) {
-    spr->animated = true;
-}
-
-void sprite_change_animation(spr_t *spr, anim_t anim) {
-    spr->animation = anim;
 }

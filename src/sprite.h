@@ -1,4 +1,27 @@
 // All the code related to render and animate tiles and sites on top of the graphic library
+// Note on the notation:
+//    An image is a file that holds multiple sheets.
+//    A sheet is a group of tiles that are grouped for some reason, for example being different animations of the same character; or different variations of similar terrain,
+//         for example grass is one sheet, dirt another... A sheet holds multiple types.
+//    A type is a group of tiles that are in the same sheet, but pretty different, for example they belong to the same animation, like walking forward is one type, walking
+//         backward another...; or grass surrounded by grass is one type, grass surrounded by dirt another... A type holds multiple variations. Types must be full-width
+//         single-height rows of the same sheet.
+//    A variation is a single tile contained in a type, for example one frame of one animation, or the same grass but slightly different to look more natural.
+//
+//              A FILE:
+//          |-----------------------|-----------------------|-----------------------|
+//          |                       |        A TYPE         |                       |
+//          |                       |-----------------------|                       |
+//          |       A SHEET         |     ANOTHER TYPE      |                       |
+//          |                       |-----------------------|                       |
+//          |                       | VARI. | VARI. | VARI. |                       |
+//          |-----------------------|-----------------------|-----------------------|
+//          |                       |                       |                       |
+//          |     ANOTHER SHEET     |                       |                       |
+//          |                       |                       |                       |
+//          |                       |                       |                       |
+//          |-----------------------|-----------------------|-----------------------|
+
 
 #ifndef SPRITE_H
 #define SPRITE_H
@@ -10,39 +33,26 @@ typedef enum {FORWARD, LEFT, RIGHT, BACKWARD} anim_t;
 
 typedef struct {
     img_t *img;
-    uint8_t w;
-    uint8_t h;
-    anim_t animation;
-    uint8_t anim_cycle[4];
-    uint16_t anim_count;
-    bool animated;
-    uint8_t frame;
-    uint8_t defaultFrame;
-    uint8_t types[25];
-    uint16_t speed;
+    int w_spr;
+    int h_spr;
+    int sheet;
+    int types[25];
+    int variations[25];
 } spr_t;
 
-spr_t * sprite_create(img_t *img, const uint8_t types[25], uint8_t frame, anim_t animation, uint8_t w, uint8_t h); // Creates an sprite, unique for each entity.
-// img is a previously loaded image (see) graphics.h, shared between all sprites from the same file.
-// type is a number, starting from 0, to select one spritesheet from the file.
-// frame is the initial frame.
-// animation is the initial pose.
-// w and h are the size the sprite to render
+spr_t * sprite_create(img_t *img, int w_spr, int h_spr, int sheet, const int types[25], const int variations[25]);
+// Creates an sprite, unique for each entity.
+//     img is the file containing this sprite.
+//     w_spr and h_spr are the size of the sprite, in tile-sizes.
+//     sheet is the group of similar tiles containing this sprite.
+//     types is the list of tile types that build this sprite.
+//     variations is the list of tile variations that build this sprite.
 
 void sprite_destroy(spr_t * spr); // Free the memory of the sprite.
 
-void sprite_render(screen_t *screen, spr_t *spr, int16_t x, int16_t y); // Renders an sprite. Must be done every frame and for every entity.
-// screen is the window where the sprite must be rendered.
-// spr is the previously loaded sprite.
-// x and y are the coords in pixels where to draw the top left corner.
-
-void sprite_freeze(spr_t *spr); // Stops the animation at the current frame.
-
-void sprite_stop_animation(spr_t *spr, uint8_t frame); // Stops the animation at the specified frame (recommended: 1).
-
-void sprite_animate(spr_t *spr); // Starts the animation from the current frame.
-
-void sprite_change_animation(spr_t *spr, anim_t anim); // Changes the animation.
-// anim is the desidered animation, one of: FORWARD, LEFT, RIGHT, BACKWARD. Use wisely, as not all spritesheets have all these animations.
+void sprite_render(spr_t *spr, int x, int y, int z);
+// Renders an sprite. Must be done every frame and for every entity.
+//     spr is the previously loaded sprite.
+//     x, y and z are the coords in pixels where to draw the top left corner.
 
 #endif
