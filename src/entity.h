@@ -5,7 +5,10 @@
 #include <assert.h>
 #include "sprite.h"
 
+extern world_t world;
+
 typedef enum { UPDIR, DOWNDIR, LEFTDIR, RIGHTDIR } directions_t;
+typedef enum {FORWARD, LEFT, RIGHT, BACKWARD} anim_t;
 typedef enum { PLAYER, COMPLEX_IA, SIMPLE_IA, PROP, TILE } entity_type_t;
 
 typedef enum {
@@ -13,7 +16,8 @@ typedef enum {
     COMPONENT_POSITION = 1 << 0,
     COMPONENT_VELOCITY = 1 << 1,
     COMPONENT_VIEW = 1 << 2,
-    COMPONENT_PHYSICS = 1 << 3
+    COMPONENT_ANIMATION = 1 << 3,
+    COMPONENT_PHYSICS = 1 << 4
 } component_t;
 
 typedef struct {
@@ -26,11 +30,17 @@ typedef struct {
     float x;
     float y;
     int chunkId;
-} component_velocity_t;
+} component_speed_t;
 
 typedef struct {
     spr_t *spr;
 } component_view_t;
+
+typedef struct {
+    int timerId;
+    int frame;
+    int anim_cycle[4];
+} component_animation_t;
 
 typedef struct {
     bool solid;
@@ -39,68 +49,148 @@ typedef struct {
 } component_physics_t;
 
 typedef struct {
-    uint8_t tile;
-    uint8_t variation;
-} component_tile_h;
+    long counts[12];
+    long timers[12];
+    int (*callbacks[12])(int);
+} component_timer_t;
 
 typedef struct {
     int mask [MAX_ENTITYS];
     component_position_t position[MAX_ENTITYS];
-    component_velocity_t velocity[MAX_ENTITYS];
+    component_speed_t speed[MAX_ENTITYS];
     component_view_t view[MAX_ENTITYS];
+    component_animation_t animaiton[MAX_ENTITYS];
     component_physics_t physics[MAX_ENTITYS];
+    component_timer_t timer[MAX_ENTITYS];
 } world_t;
 
+
 // CREATION AND DESTRUCTION FUNCTIONS
-int entity_get_empty_id(world_t *world, entity_type_t entity_type); // Returns the first empty id.
-// entity_type is one of { PLAYER, COMPLEX_IA, SIMPLE_IA, PROP, TILE }, for convenience.
+void world_create(void);
+// Creates the world component and populates it with chunks.
 
-void entity_mark_destroyed(world_t *world, int id); // Marks the id as unused.
-// entity is the id of the entity to destroy.
+int entity_get_empty_id(entity_type_t entity_type);
+// Returns the first empty id.
+//     entity_type is one of { PLAYER, COMPLEX_IA, SIMPLE_IA, PROP, TILE }, for convenience.
+// Returns the first empty id in world.
 
-int entity_create(world_t *world, float x, float y, float z, entity_type_t entity_type); // Creates an entity
-// x and y are the initial position.
-// z is the initial height (for rendering on top or below other entityes).
-// entity_type is one of { PLAYER, COMPLEX_IA, SIMPLE_IA, PROP, TILE }, for convenience.
+void entity_mark_destroyed(int id);
+// Marks the id as unused.
+//     id is the id of the entity to destroy.
 
-void entity_destroy(world_t *world, int id);// Destroy the entity and free some memory.
+int entity_create(float x, float y, float z, entity_type_t entity_type);
+// Creates an entity
+//     x and y are the initial position.
+//     z is the initial height (for rendering on top or below other entityes).
+//     entity_type is one of { PLAYER, COMPLEX_IA, SIMPLE_IA, PROP, TILE }, for convenience.
+// Returns the id of the entity created.
 
-world_t * world_create(void); // Creates the world component and populates it with chunks.
+void entity_destroy(int id);
+// Destroy the entity and free some memory.
+//     id is the id of the entity to destroy.
+
 
 // POSITION FUNCTIONS
-void entity_set_position(world_t *world, int id, float x, float y, float z); // Set the entity position to the specified coords.
-// Use NULL in x, y or z to leave it equal.
+void entity_set_x(int id, float x);
+// Set the entity x to the specified x.
+//     id is the id of the entity to move.
+//     x is the new x.
 
-// VELOCITY FUNCTIONS
-void entity_set_velocity(world_t *world, int id, directions_t dir, float qty); // Sets the entity velocity to a certain direction.
+void entity_set_y(int id, float y);
+// Set the entity y to the specified y.
+//     id is the id of the entity to move.
+//     y is the new y.
+
+void entity_set_z(int id, float z);
+// Set the entity z to the specified z.
+//     id is the id of the entity to move.
+//     z is the new z.
+
+
+// SPEED FUNCTIONS
+void entity_set_speed(int id, directions_t dir, float qty);
+// Sets the entity speed to a certain direction.
 // If the entity was already moving in the same axis (same direction or opposite), new persists and older is overwritten.
-// id is the entity id to move.
-// dir is one of { UPDIR, DOWNDIR, RIGHTDIR, LEFTDIR }.
-// qty is the new velocity (always positive, and please use entity_stop_velocity() for stopping, instead of a qty of 0).
+//     id is the id of the entity to move.
+//     dir is one of { UPDIR, DOWNDIR, RIGHTDIR, LEFTDIR }.
+//     qty is the new speed (always positive, and please use entity_stop_speed() for stopping, instead of a qty of 0).
 
-void entity_stop_velocity(world_t *world, int id, directions_t dir); // Stops the entity from moving in a certain direction.
-// id is the entity id to stop.
-// dir is one of { UPDIR, DOWNDIR, RIGHTDIR, LEFTDIR }.
+void entity_stop_speed(int id, directions_t dir);
+// Stops the entity from moving in a certain direction.
+//     id is the id of the entity to stop.
+//     dir is one of { UPDIR, DOWNDIR, RIGHTDIR, LEFTDIR }.
+
 
 // VIEW FUNCTIONS
-void entity_set_view(world_t *world, int id, img_t *img, uint8_t type); // Sets an image to an entity
-// img is the image file where the sprite for the entity is.
-// type is the type of sprite from that image file.
+void entity_set_view(int id, img_t *img, int sheet);
+// Sets an image to an entity.
+//     id is the id of the entity to assign the view.
+//     img is the image file where the sprite for the entity is.
+//     sheet is the sheet of sprite from that image file.
 
-void entity_set_view_tile(world_t *world, int id, img_t *img, uint8_t terrain, uint8_t variation); // Sets an image to tile
-// terrain is the type of terrain from that image file.
-// variation is one of the variations of that terrain.
+void entity_destroy_view(int id);
+// Releases the memory that sprite occupies.
+//     id is the id of the entity to destroy its view.
 
-void entity_destroy_view(world_t *world, int id); // Free the sprite.
+
+// ANIMATION FUNCTIONS
+void entity_set_animation(int id, anim_t animation);
+// Starts the animation of the sprite.
+//     id is the id of the entity to animate.
+//     animation is one of {FORWARD, LEFT, RIGHT, BACKWARD}.
+
+void entity_stop_animation(int id);
+// Stops the animation of the sprite and sets its frame to the base frame.
+//     id is the id of the entity to un-animate.
+
+void entity_freeze_animation(int id);
+// Stops the animation of the sprite and sets its frame to the current frame.
+//     id is the id of the entity to freeze.
+
 
 // PHYSICS FUNCTIONS
-void entity_set_solid(world_t *world, int id, bool solid); // Sets wheter the entity is solid
+void entity_set_solid(int id, bool solid);
+// Sets wheter the entity is solid.
+//     id is the id of the entity to set or clear.
+//     solid is whether the entity blocks movement or not
 
-void entity_set_size(world_t *world, int id, uint8_t w, uint8_t h); // Sets the entity's width and height
+void entity_set_size(int id, uint8_t w, uint8_t h);
+// Sets the entity's real size (for the collisions).
+//     id is the id of the entity to which to set the size.
+//     w and h are the real size.
+
+
+// TIMER FUNCTIONS
+int entity_set_timer(int id, long time, void (*callback)(int));
+// Sets a timer. Calls a callback function when timer ends.
+//     id is the id of the entity to set the timer to.
+//     callback is the callback function that the timer will call.
+// Returns the id of the timer.
+
+long entity_read_timer(int id, int timerId);
+// Reads the value of the timer without stopping it.
+//     id is the id of the entity to read the timer to.
+//     timerId is the id of the timer to read.
+// Returns the time ellapsed from the set of the timer.
+
+long entity_cancel_timer(int id, int timerId);
+// Cancels a timer.
+//     id is the id of the entity to cancel the timer to.
+//     timerId is the id of the timer to cancel.
+// Returns the time ellapsed from the set of the timer.
+
 
 // SYSTEMS
-void entitys_move(world_t *world); // Moves all the entitys based on their velocityes. Also animates them if necessary.
+void entitys_timer();
+// Updates all the timers.
 
-void entitys_render(world_t *world, screen_t *screen); // Renders all the entitys in world to the screen.
+void entitys_move();
+// Moves all the entitys based on their velocityes. Also sets their animations if necessary.
+
+void entitys_animate();
+// Animates all the entitys.
+
+void entitys_render();
+// Renders all the entitys in world to the screen.
 
 #endif

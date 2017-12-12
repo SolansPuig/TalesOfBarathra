@@ -1,7 +1,7 @@
 #include <stdbool.h>
 #include "sprite.h"
 
-spr_t * sprite_create(img_t *img, int w_spr, int h_spr, int sheet, const int types[25], const int variations[25]) {
+spr_t * sprite_create(img_t *img, int w_spr, int h_spr, int sheet, const int * types, const int * variations) {
     spr_t *spr = malloc(sizeof(spr_t));
 
     spr->img = img;
@@ -41,4 +41,12 @@ void sprite_render(spr_t *spr, int x, int y, int z) {
             graphics_render_texture(img, src_x, src_y, dest_x, dest_y, y, z);
         }
     }
+}
+
+void sprite_change_types(spr_t *spr, const int * types) {
+    memcpy(spr->types, types, 25);
+}
+
+void sprite_change_variations(spr_t *spr, const int * variations) {
+    memcpy(spr->variations, variations, 25);
 }

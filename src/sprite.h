@@ -29,8 +29,6 @@
 #include <stdbool.h>
 #include "graphics.h"
 
-typedef enum {FORWARD, LEFT, RIGHT, BACKWARD} anim_t;
-
 typedef struct {
     img_t *img;
     int w_spr;
@@ -40,7 +38,7 @@ typedef struct {
     int variations[25];
 } spr_t;
 
-spr_t * sprite_create(img_t *img, int w_spr, int h_spr, int sheet, const int types[25], const int variations[25]);
+spr_t * sprite_create(img_t *img, int w_spr, int h_spr, int sheet, const int * types, const int * variations);
 // Creates an sprite, unique for each entity.
 //     img is the file containing this sprite.
 //     w_spr and h_spr are the size of the sprite, in tile-sizes.
@@ -54,5 +52,16 @@ void sprite_render(spr_t *spr, int x, int y, int z);
 // Renders an sprite. Must be done every frame and for every entity.
 //     spr is the previously loaded sprite.
 //     x, y and z are the coords in pixels where to draw the top left corner.
+
+void sprite_change_types(spr_t *spr, const int * types);
+// Changes the types list (AKA, in most cases, changes the animation).
+//     spr is the previously loaded sprite.
+//     types is the list of tile types to change.
+
+void sprite_change_variations(spr_t *spr, const int * variations);
+// Changes the variaitons list (AKA, in most cases, changes the animation frame).
+//     spr is the previously loaded sprite.
+//     variations is the list of tile variations to change.
+
 
 #endif

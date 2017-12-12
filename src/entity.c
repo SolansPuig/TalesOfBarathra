@@ -1,24 +1,32 @@
 #include <stdio.h>
 #include "entity.h"
 
-int entity_get_empty_id(world_t *world, entity_type_t entity_type) {
+static world_t world;
+
+// CREATION AND DESTRUCTION FUNCTIONS
+void world_create(void) {
+    world = malloc(sizeof(world_t));
+    return world;
+}
+
+int entity_get_empty_id(entity_type_t entity_type) {
     int id = 0;
     int max = MAX_ENTITYS;
-
     for (id; id < max; id++) {
         if (world->mask[id] == COMPONENT_NONE) {
             break;
         }
     }
+
     assert(id < max);
     return id;
 }
 
-void entity_mark_destroyed(world_t *world, int id) {
+void entity_mark_destroyed(int id) {
     world->mask[id] = COMPONENT_NONE;
 }
 
-int entity_create(world_t *world, float x, float y, float z, entity_type_t entity_type) {
+int entity_create(float x, float y, float z, entity_type_t entity_type) {
     int id = entity_get_empty_id(world, entity_type);
     world->mask[id] = COMPONENT_POSITION;
     world->position[id].x = x;
@@ -28,27 +36,42 @@ int entity_create(world_t *world, float x, float y, float z, entity_type_t entit
     return id;
 }
 
-void entity_destroy(world_t *world, int id) {
+void entity_destroy(int id) {
     entity_destroy_view(world, id);
     entity_mark_destroyed(world, id);
 }
 
-world_t * world_create(void) {
-    world_t * world = malloc(sizeof(world_t));
-    return world;
-}
 
-void entity_set_position(world_t *world, int id, float x, float y, float z) {
+
+// POSITION FUNCTIONS
+void entity_set_x(int id, float x) {
     assert(world->mask[id] != COMPONENT_NONE);
     component_position_t *pos = &(world->position[id]);
     pos->x = x;
+
+    world->mask[id] |= COMPONENT_POSITION;
+}
+
+void entity_set_y(int id, float y) {
+    assert(world->mask[id] != COMPONENT_NONE);
+    component_position_t *pos = &(world->position[id]);
     pos->y = y;
+
+    world->mask[id] |= COMPONENT_POSITION;
+}
+
+void entity_set_z(int id, float z) {
+    assert(world->mask[id] != COMPONENT_NONE);
+    component_position_t *pos = &(world->position[id]);
     pos->z = z;
 
     world->mask[id] |= COMPONENT_POSITION;
 }
 
-void entity_set_velocity(world_t *world, int id, directions_t dir, float qty) {
+
+
+// SPEED FUNCTIONS
+void entity_set_speed(int id, directions_t dir, float qty) {
     assert(world->mask[id] != COMPONENT_NONE);
     component_velocity_t *vel = &(world->velocity[id]);
     switch (dir) {
@@ -72,7 +95,7 @@ void entity_set_velocity(world_t *world, int id, directions_t dir, float qty) {
     world->mask[id] |= COMPONENT_VELOCITY;
 }
 
-void entity_stop_velocity(world_t *world, int id, directions_t dir) {
+void entity_stop_speed(int id, directions_t dir) {
     assert(world->mask[id] != COMPONENT_NONE);
     if ((world->mask[id] & COMPONENT_VELOCITY) == COMPONENT_VELOCITY) {
         component_velocity_t *vel = &(world->velocity[id]);
@@ -103,29 +126,20 @@ void entity_stop_velocity(world_t *world, int id, directions_t dir) {
     }
 }
 
-void entity_set_view(world_t *world, int id, img_t *img, uint8_t type) {
+
+
+// VIEW FUNCTIONS
+void entity_set_view(int id, img_t *img, int sheet) {
     assert(world->mask[id] != COMPONENT_NONE);
     component_view_t *view = &(world->view[id]);
     int types[25] = {0};
-    int variations[25] = {1};
-    view->spr = sprite_create(img, 1, 1, type, types, variations);
+    int variations[25] = {0};
+    view->spr = sprite_create(img, 1, 1, sheet, types, variations);
 
     world->mask[id] |= COMPONENT_VIEW;
 }
 
-void entity_set_view_tile(world_t *world, int id, img_t *img, uint8_t terrain, uint8_t variation) {
-    assert(world->mask[id] != COMPONENT_NONE);
-    component_view_t *view = &(world->view[id]);
-    int type = terrain;
-    printf("%d\n", type);
-    int types[25] = {0, 0, 0, 0};
-    int variations[25] = {0, 1, 2, 3};
-    view->spr = sprite_create(img, 2, 2, type, types, variations);
-
-    world->mask[id] |= COMPONENT_VIEW;
-}
-
-void entity_destroy_view(world_t *world, int id) {
+void entity_destroy_view(int id) {
     assert(world->mask[id] != COMPONENT_NONE);
     component_view_t *view = &(world->view[id]);
     sprite_destroy(view->spr);
@@ -139,6 +153,22 @@ void entity_set_solid(world_t *world, int id, bool solid) {
     physics->solid = solid;
 
     world->mask[id] |= COMPONENT_PHYSICS;
+}
+
+
+// ANIMATION FUNCTIONS
+void entity_init_animation(int id, int speed) {
+
+}
+
+void entity_set_animation(int id, anim_t anim_type) {
+    assert(world->mask[id] != COMPONENT_NONE);
+
+    if (world->mask[id] & COMPONENT_VIEW) == COMPONENT_VIEW) {
+        component_view_t *view = &(world->view[id]);
+        sprite_change_types(view->spr, anim_type);
+    }
+    world->mask[id] |= COMPONENT_ANIMATION;
 }
 
 void entity_set_size(world_t *world, int id, uint8_t w, uint8_t h) {
@@ -243,6 +273,31 @@ void entitys_render(world_t *world, screen_t *screen) {
             view = &(world->view[id]);
             sprite_render(view->spr, pos->x, pos->y, pos->z);
             //if (debug) graphics_draw_point(screen, pos->x, pos->y);
+        }
+    }
+}
+
+void entitys_animate() {
+    for (id = 0; id < MAX_ENTITYS; id++) {
+        if ((world->mask[id] & COMPONENT_ANIMATION) == COMPONENT_ANIMATION && world->mask[id] & COMPONENT_VIEW) == COMPONENT_VIEW) {
+            component_animation_t *animation = &(world->animation[id]);
+            component_view_t *view = &(world->view[id]);
+
+            long delta = entity_read_timer(id, animation->timerId);
+            if (delta >= animation->speed) {
+                entity_cancel_timer(id, animation->timerId);
+                animation->frame = (animation->frame + 1) % 4;
+
+                int i, vars[25];
+                for (i = 0; i < (view->spr->w_spr * view->spr->h_spr); i++) {
+                    vars[i] = animation->anim_cycle[animation->frame];
+                }
+                sprite_change_variations(view->spr, &vars);
+
+                entity_set_timer(id, -1, NULL);
+            } else if (delta == 0) {
+                entity_set_timer(id, -1, NULL);
+            }
         }
     }
 }
