@@ -5,8 +5,6 @@
 #include "sprite.h"
 #include "entity.h"
 
-#define MS_PER_UPDATE 16
-
 static int player;
 static bool done;
 bool debug;
@@ -95,35 +93,44 @@ int main (void) {
     world_create();
     graphics_open_window("Tales of Barathra", 1200, 780);
     img_t *knights = graphics_load_image("assets/knight_factions_1.png", 26, 36, 4, 3, 4);
-    img_t *ground = graphics_load_image("assets/grounds.png", 16, 16, 1, 18, 2);
+    img_t *ground = graphics_load_image("assets/grounds.png", 16, 16, 1, 18, 1);
+    int anim_cycle[4] = {0, 1, 2, 1};
 
     player = entity_create(20, 40, 1, PLAYER);
-    entity_set_view(player, knights, 0);
+    entity_set_view(player, knights, 0, 1, 1);
     entity_set_solid(player, true);
     entity_set_size(player, 12, 6);
-    int anim_cycle[4] = {0, 1, 2, 1};
-    entity_init_animation(player, 1, &anim_cycle[0], 1700);
+    entity_init_animation(player, 1, anim_cycle, 30);
 
-    // int knight = entity_create(world, 300, 200, 1, COMPLEX_IA);
-    // entity_set_view(world, knight, knights, 3);
-    // entity_set_solid(world, knight, true);
-    // entity_set_size(world, knight, 12, 6);
-    //
-    // knight = entity_create(world, 300, 150, 1, COMPLEX_IA);
-    // entity_set_view(world, knight, knights, 1);
-    // entity_set_solid(world, knight, true);
-    // entity_set_size(world, knight, 12, 6);
-    //
-    // entity_set_velocity(world, 1, LEFTDIR, 0.5);
-    //
-    // int tile = entity_create(world, 15, 30, 0, TILE);
-    // entity_set_view_tile(world, tile, ground, 0, 0);
-    // tile = entity_create(world, 47, 30, 0, TILE);
-    // entity_set_view_tile(world, tile, ground, 1, 0);
-    // tile = entity_create(world, 79, 30, 0, TILE);
-    // entity_set_view_tile(world, tile, ground, 2, 0);
-    // tile = entity_create(world, 111, 30, 0, TILE);
-    // entity_set_view_tile(world, tile, ground, 3, 0);
+    int knight = entity_create(300, 200, 1, COMPLEX_IA);
+    entity_set_view(knight, knights, 2, 1, 1);
+    entity_set_solid(knight, true);
+    entity_set_size(knight, 12, 6);
+    entity_init_animation(knight, 1, anim_cycle, 30);
+
+    knight = entity_create(300, 150, 1, COMPLEX_IA);
+    entity_set_view(knight, knights, 1, 1, 1);
+    entity_set_solid(knight, true);
+    entity_set_size(knight, 12, 6);
+    entity_init_animation(knight, 1, anim_cycle, 30);
+
+    entity_set_speed(1, LEFTDIR, 0.5);
+
+    int variations[25] = {0, 1, 2, 7};
+    int tile = entity_create(15, 30, 0, TILE);
+    entity_set_view(tile, ground, 0, 2, 2);
+    entity_set_view_variations(tile, variations);
+    entity_init_animation(tile, 1, anim_cycle, 30);
+    entity_set_animation(tile, FORWARD);
+    tile = entity_create(47, 30, 0, TILE);
+    entity_set_view(tile, ground, 1, 2, 2);
+    entity_set_view_variations(tile, variations);
+    tile = entity_create(79, 30, 0, TILE);
+    entity_set_view(tile, ground, 2, 2, 2);
+    entity_set_view_variations(tile, variations);
+    tile = entity_create(111, 30, 0, TILE);
+    entity_set_view(tile, ground, 3, 2, 2);
+    entity_set_view_variations(tile, variations);
 
     double lag = 0.0;
     done = false;

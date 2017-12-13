@@ -53,13 +53,18 @@ void sprite_render(spr_t *spr, int x, int y, int z);
 //     spr is the previously loaded sprite.
 //     x, y and z are the coords in pixels where to draw the top left corner.
 
+void sprite_change_sheet(spr_t *spr, int sheet);
+// Changes the sheet (AKA, in most cases, changes the animation frame of a tile).
+//     spr is the previously loaded sprite.
+//     sheet is the sheet we want to change to.
+
 void sprite_change_types(spr_t *spr, const int * types);
 // Changes the types list (AKA, in most cases, changes the animation).
 //     spr is the previously loaded sprite.
 //     types is the list of tile types to change.
 
 void sprite_change_variations(spr_t *spr, const int * variations);
-// Changes the variaitons list (AKA, in most cases, changes the animation frame).
+// Changes the variations list (AKA, in most cases, changes the animation frame).
 //     spr is the previously loaded sprite.
 //     variations is the list of tile variations to change.
 

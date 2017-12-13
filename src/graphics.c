@@ -51,10 +51,24 @@ void graphics_render_texture(const img_t *img, int src_x, int src_y, int dst_x, 
     renderBufferIndex ++;
 }
 
-void graphics_draw_point(int x, int y) {
-    SDL_SetRenderDrawColor(screen->renderer, 255, 0, 0, 255 );
-    SDL_RenderDrawPoint(screen->renderer, x, y);
-    SDL_SetRenderDrawColor(screen->renderer, 0, 0, 0, 255 );
+void graphics_draw_rect(int x0, int y0, int x1, int y1, int z, int r, int g, int b, int a) {
+    rect_t dst = { x0, y0, x1-x0, y1-y0 };
+    to_render_t ren;
+    memcpy(&ren.dst, &dst, sizeof(rect_t));
+    ren.texture = NULL;
+    ren.y = y0;
+    ren.z = z;
+    ren.r = r;
+    ren.g = g;
+    ren.b = b;
+    ren.a = a;
+
+    renderBuffer[renderBufferIndex] = ren;
+    renderBufferIndex ++;
+}
+
+void graphics_draw_point(int x, int y, int z, int r, int g, int b, int a) {
+    graphics_draw_rect(x, y, x+1, y+1, z, r, g, b, a);
 }
 
 int order (const void * elem1, const void * elem2) {
@@ -78,8 +92,13 @@ void graphics_show() {
 
     int i;
     for (i = 0; i < renderBufferIndex; i++) {
-        to_render_t r = renderBuffer[i];
-        SDL_RenderCopy(screen->renderer, r.texture, &r.src, &r.dst);
+        to_render_t ren = renderBuffer[i];
+        if (ren.texture == NULL) {
+            SDL_SetRenderDrawColor(screen->renderer, ren.r, ren.g, ren.b, ren.a );
+            SDL_RenderDrawRect(screen->renderer, &ren.dst);
+            SDL_SetRenderDrawColor(screen->renderer, BLACK );
+        }
+        SDL_RenderCopy(screen->renderer, ren.texture, &ren.src, &ren.dst);
     }
 
     SDL_RenderPresent(screen->renderer);

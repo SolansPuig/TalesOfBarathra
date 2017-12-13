@@ -11,13 +11,18 @@ typedef enum { PLAYER, COMPLEX_IA, SIMPLE_IA, PROP, TILE } entity_type_t;
 
 typedef enum {
     COMPONENT_NONE = 0,
-    COMPONENT_POSITION = 1 << 0,
-    COMPONENT_SPEED = 1 << 1,
-    COMPONENT_VIEW = 1 << 2,
-    COMPONENT_ANIMATION = 1 << 3,
-    COMPONENT_PHYSICS = 1 << 4,
-    COMPONENT_TIMER = 1 << 5
+    COMPONENT_TYPE = 1 << 0,
+    COMPONENT_POSITION = 1 << 1,
+    COMPONENT_SPEED = 1 << 2,
+    COMPONENT_VIEW = 1 << 3,
+    COMPONENT_ANIMATION = 1 << 4,
+    COMPONENT_PHYSICS = 1 << 5,
+    COMPONENT_TIMER = 1 << 6
 } component_t;
+
+typedef struct {
+    entity_type_t type;
+} component_type_t;
 
 typedef struct {
     float x;
@@ -36,6 +41,7 @@ typedef struct {
 } component_view_t;
 
 typedef struct {
+    int type;
     int timerId;
     int frame;
     int anim_cycle[4];
@@ -51,11 +57,12 @@ typedef struct {
 typedef struct {
     long counts[12];
     long timers[12];
-    int (*callbacks[12])(int);
+    void (*callbacks[12])(int);
 } component_timer_t;
 
 typedef struct {
     long mask [MAX_ENTITYS];
+    component_type_t type[MAX_ENTITYS];
     component_position_t position[MAX_ENTITYS];
     component_speed_t speed[MAX_ENTITYS];
     component_view_t view[MAX_ENTITYS];
@@ -124,11 +131,17 @@ void entity_stop_speed(int id, directions_t dir);
 
 
 // VIEW FUNCTIONS
-void entity_set_view(int id, img_t *img, int sheet);
+void entity_set_view(int id, img_t *img, int sheet, int w_spr, int h_spr);
 // Sets an image to an entity.
 //     id is the id of the entity to assign the view.
 //     img is the image file where the sprite for the entity is.
 //     sheet is the sheet of sprite from that image file.
+//     w_spr and h_spr are the size of the sprite, in tile-sizes.
+
+void entity_set_view_variations(int id, int * variations);
+// Sets the array of variaitons for an entity.
+//     id is the id of the entity to assign the variations.
+//     variations is an array of 1 to 25 variations.
 
 void entity_destroy_view(int id);
 // Releases the memory that sprite occupies.

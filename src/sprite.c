@@ -8,8 +8,8 @@ spr_t * sprite_create(img_t *img, int w_spr, int h_spr, int sheet, const int * t
     spr->w_spr = w_spr;
     spr->h_spr = h_spr;
     spr->sheet = sheet;
-    memcpy(spr->types, types, 25);
-    memcpy(spr->variations, variations, 25);
+    memcpy(spr->types, types, sizeof(int) * 25);
+    memcpy(spr->variations, variations, sizeof(int) * 25);
 
     return spr;
 }
@@ -43,10 +43,14 @@ void sprite_render(spr_t *spr, int x, int y, int z) {
     }
 }
 
+void sprite_change_sheet(spr_t *spr, int sheet) {
+    spr->sheet = sheet;
+}
+
 void sprite_change_types(spr_t *spr, const int * types) {
-    memcpy(spr->types, types, 25);
+    memcpy(spr->types, types, sizeof(int)*25);
 }
 
 void sprite_change_variations(spr_t *spr, const int * variations) {
-    memcpy(spr->variations, variations, 25);
+    memcpy(spr->variations, variations, sizeof(int)*25);
 }

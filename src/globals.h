@@ -10,8 +10,16 @@
 #define MAX_PROPS       2000
 #define MAX_TILES       10000
 
+#define MS_PER_UPDATE 16
+
 #define TILESIZE    16
 #define CHUNKSIZE   (16 * TILESIZE)
+
+#define BLACK 0,0,0,255
+#define WHITE 255,255,255,255
+#define RED 255,0,0,255
+#define GREEN 0,255,0,255
+#define BLUE 0,0,255,255
 
 #define MAX_ENTITYS (MAX_PLAYERS + MAX_COMPLEX_IA + MAX_SIMPLE_IA + MAX_PROPS + MAX_TILES)
 

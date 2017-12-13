@@ -13,6 +13,7 @@ typedef SDL_Renderer    ren_t;
 typedef SDL_Surface     sur_t;
 typedef SDL_Texture     tex_t;
 typedef SDL_Rect        rect_t;
+typedef SDL_Color       color_t;
 
 typedef struct {
     char *title;
@@ -38,6 +39,10 @@ typedef struct {
     rect_t dst;
     int y;
     int z;
+    int r;
+    int g;
+    int b;
+    int a;
 } to_render_t;
 
 extern screen_t *screen;
@@ -61,14 +66,26 @@ void graphics_render_texture(const img_t *img, int src_x, int src_y, int dst_x, 
 //      dst_x and dst_y are the coords, in pixels, where to draw the top left corner.
 //      y and z are the height and depth of the entity calling this, to calculate which image has to render on top.
 
-void graphics_draw_point(int x, int y);
-// Add a red point at the specified coordinates to the rendering buffer.
-//      x and y are the coords, in pixels, where to draw the point.
-
-void graphics_draw_rect(int x0, int y0, int x1, int y1);
+void graphics_draw_rect(int x0, int y0, int x1, int y1, int z, int r, int g, int b, int a);
 // Add a rectangle at the specified coordinates to the rendering buffer.
 //      x0 and y0 are the coords, in pixels, where to draw the top left corner of the rectangle.
 //      x1 and y1 are the coords, in pixels, where to draw the bottom right corner of the rectangle.
+//      y1 and z are also the height and depth of the entity calling this, to calculate which image has to render on top.
+//      color is the color we want to draw.
+//      r is the red value used to draw on the rendering target
+//      g is the green value used to draw on the rendering target
+//      b the blue value used to draw on the rendering target
+//      a the alpha value used to draw on the rendering target
+
+void graphics_draw_point(int x, int y, int z, int r, int g, int b, int a);
+// Add a red point at the specified coordinates to the rendering buffer.
+//      x and y are the coords, in pixels, where to draw the point.
+//      y and z are also the height and depth of the entity calling this, to calculate which image has to render on top.
+//      color is the color we want to draw.
+//      r is the red value used to draw on the rendering target
+//      g is the green value used to draw on the rendering target
+//      b the blue value used to draw on the rendering target
+//      a the alpha value used to draw on the rendering target
 
 void graphics_clear();
 // Clears the screen.
