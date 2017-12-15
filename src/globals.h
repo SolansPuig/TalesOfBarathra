@@ -8,12 +8,11 @@
 #define MAX_COMPLEX_IA  200
 #define MAX_SIMPLE_IA   1000
 #define MAX_PROPS       2000
-#define MAX_TILES       10000
+#define MAX_TILES       15000
 
 #define MS_PER_UPDATE 16
 
 #define TILESIZE    16
-#define CHUNKSIZE   (16 * TILESIZE)
 
 #define BLACK 0,0,0,255
 #define WHITE 255,255,255,255

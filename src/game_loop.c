@@ -4,6 +4,8 @@
 #include "globals.h"
 #include "sprite.h"
 #include "entity.h"
+#include "world.h"
+#include "math.h"
 
 static int player;
 static bool done;
@@ -89,48 +91,35 @@ void render() {
 }
 
 int main (void) {
+    math_random_seed();
     debug = false;
     world_create();
     graphics_open_window("Tales of Barathra", 1200, 780);
     img_t *knights = graphics_load_image("assets/knight_factions_1.png", 26, 36, 4, 3, 4);
-    img_t *ground = graphics_load_image("assets/grounds.png", 16, 16, 1, 18, 1);
-    int anim_cycle[4] = {0, 1, 2, 1};
+    img_t *terrain = graphics_load_image("assets/terrain.png", 16, 16, 1, 39, 38);
 
-    player = entity_create(20, 40, 1, PLAYER);
-    entity_set_view(player, knights, 0, 1, 1);
-    entity_set_solid(player, true);
-    entity_set_size(player, 12, 6);
-    entity_init_animation(player, 1, anim_cycle, 30);
+    player = world_create_player(knights, 0, 40, 50, 1);
 
-    int knight = entity_create(300, 200, 1, COMPLEX_IA);
-    entity_set_view(knight, knights, 2, 1, 1);
-    entity_set_solid(knight, true);
-    entity_set_size(knight, 12, 6);
-    entity_init_animation(knight, 1, anim_cycle, 30);
+    world_create_npc(knights, 2, 300, 200, 1);
 
-    knight = entity_create(300, 150, 1, COMPLEX_IA);
-    entity_set_view(knight, knights, 1, 1, 1);
-    entity_set_solid(knight, true);
-    entity_set_size(knight, 12, 6);
-    entity_init_animation(knight, 1, anim_cycle, 30);
+    int Charlie = world_create_npc(knights, 1, 300, 150, 1);
+    entity_set_speed(Charlie, LEFTDIR, 0.5);
 
-    entity_set_speed(1, LEFTDIR, 0.5);
+    for (int x = 0; x < 50; x++) {
+        for (int y = 0; y < 50; y++) {
+            if (math_random_prob(20)) world_create_specific_terrain(terrain, GRASS, x, y, 0);
+            else world_create_specific_terrain(terrain, DIRT, x, y, 0);
+        }
+    }
 
-    int variations[25] = {0, 1, 2, 7};
-    int tile = entity_create(15, 30, 0, TILE);
-    entity_set_view(tile, ground, 0, 2, 2);
-    entity_set_view_variations(tile, variations);
-    entity_init_animation(tile, 1, anim_cycle, 30);
-    entity_set_animation(tile, FORWARD);
-    tile = entity_create(47, 30, 0, TILE);
-    entity_set_view(tile, ground, 1, 2, 2);
-    entity_set_view_variations(tile, variations);
-    tile = entity_create(79, 30, 0, TILE);
-    entity_set_view(tile, ground, 2, 2, 2);
-    entity_set_view_variations(tile, variations);
-    tile = entity_create(111, 30, 0, TILE);
-    entity_set_view(tile, ground, 3, 2, 2);
-    entity_set_view_variations(tile, variations);
+    for (int id = 0; id < MAX_ENTITYS; id++) {
+        if (entity_exists(id)) {
+            int type = entity_get_type(id);
+            if (type == TILE) {
+                world_update_tile(id);
+            }
+        }
+    }
 
     double lag = 0.0;
     done = false;

@@ -54,3 +54,11 @@ void sprite_change_types(spr_t *spr, const int * types) {
 void sprite_change_variations(spr_t *spr, const int * variations) {
     memcpy(spr->variations, variations, sizeof(int)*25);
 }
+
+void sprite_update_type(spr_t *spr, int typeId, int type) {
+    spr->types[typeId] = type;
+}
+
+void sprite_update_variation(spr_t *spr, int variationId, int variation) {
+    spr->variations[variationId] = variation;
+}

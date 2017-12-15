@@ -22,6 +22,7 @@ typedef enum {
 
 typedef struct {
     entity_type_t type;
+    int variant;
 } component_type_t;
 
 typedef struct {
@@ -94,6 +95,19 @@ int entity_create(float x, float y, float z, entity_type_t entity_type);
 //     entity_type is one of { PLAYER, COMPLEX_IA, SIMPLE_IA, PROP, TILE }, for convenience.
 // Returns the id of the entity created.
 
+bool entity_exists(int id);
+
+int entity_get_type(int id);
+
+void entity_set_variant(int id, int variant);
+// Sets a variant of the type of the entity.
+//      id is the id of the entity to set a variant.
+//      variant is the new variant to assign.
+
+int entity_get_variant(int id);
+// Gets the variant of the type of the entity.
+//      id is the id of the entity to set a variant.
+
 void entity_destroy(int id);
 // Destroy the entity and free some memory.
 //     id is the id of the entity to destroy.
@@ -114,6 +128,18 @@ void entity_set_z(int id, float z);
 // Set the entity z to the specified z.
 //     id is the id of the entity to move.
 //     z is the new z.
+
+float entity_get_x(int id);
+// Get the entity x.
+//     id is the id of the entity to read the x.
+
+float entity_get_y(int id);
+// Get the entity y.
+//     id is the id of the entity to read the y.
+
+float entity_get_z(int id);
+// Get the entity z.
+//     id is the id of the entity to read the z.
 
 
 // SPEED FUNCTIONS
@@ -142,6 +168,15 @@ void entity_set_view_variations(int id, int * variations);
 // Sets the array of variaitons for an entity.
 //     id is the id of the entity to assign the variations.
 //     variations is an array of 1 to 25 variations.
+
+void entity_update_view_variation(int id, int variationId, int variation);
+
+void entity_set_view_types(int id, int* types);
+// Sets the array of types for an entity.
+//     id is the id of the entity to assign the types.
+//     types is an array of 1 to 25 types.
+
+void entity_update_view_type(int id, int typeId, int type);
 
 void entity_destroy_view(int id);
 // Releases the memory that sprite occupies.

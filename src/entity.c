@@ -25,6 +25,10 @@ void entity_mark_destroyed(int id) {
     world->mask[id] = COMPONENT_NONE;
 }
 
+bool entity_exists(int id) {
+    return (world->mask[id] != COMPONENT_NONE);
+}
+
 int entity_create(float x, float y, float z, entity_type_t entity_type) {
     int id = entity_get_empty_id(entity_type);
     world->mask[id] = COMPONENT_POSITION;
@@ -34,6 +38,21 @@ int entity_create(float x, float y, float z, entity_type_t entity_type) {
     world->position[id].z = z;
 
     return id;
+}
+
+int entity_get_type(int id) {
+    assert(world->mask[id] != COMPONENT_NONE);
+    return world->type[id].type;
+}
+
+void entity_set_variant(int id, int variant) {
+    assert(world->mask[id] != COMPONENT_NONE);
+    world->type[id].variant = variant;
+}
+
+int entity_get_variant(int id) {
+    assert(world->mask[id] != COMPONENT_NONE);
+    return world->type[id].variant;
 }
 
 void entity_destroy(int id) {
@@ -67,6 +86,22 @@ void entity_set_z(int id, float z) {
 
     world->mask[id] |= COMPONENT_POSITION;
 }
+
+float entity_get_x(int id) {
+    assert(world->mask[id] != COMPONENT_NONE);
+    return world->position[id].x;
+}
+
+float entity_get_y(int id) {
+    assert(world->mask[id] != COMPONENT_NONE);
+    return world->position[id].y;
+}
+
+float entity_get_z(int id) {
+    assert(world->mask[id] != COMPONENT_NONE);
+    return world->position[id].z;
+}
+
 
 
 
@@ -144,6 +179,27 @@ void entity_set_view_variations(int id, int * variations) {
     component_view_t *view = &(world->view[id]);
 
     sprite_change_variations(view->spr, variations);
+}
+
+void entity_update_view_variation(int id, int variationId, int variation) {
+    assert(world->mask[id] != COMPONENT_NONE);
+    component_view_t *view = &(world->view[id]);
+
+    sprite_update_variation(view->spr, variationId, variation);
+}
+
+void entity_set_view_types(int id, int * types) {
+    assert(world->mask[id] != COMPONENT_NONE);
+    component_view_t *view = &(world->view[id]);
+
+    sprite_change_types(view->spr, types);
+}
+
+void entity_update_view_type(int id, int typeId, int type) {
+    assert(world->mask[id] != COMPONENT_NONE);
+    component_view_t *view = &(world->view[id]);
+
+    sprite_update_type(view->spr, typeId, type);
 }
 
 void entity_destroy_view(int id) {

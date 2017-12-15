@@ -63,10 +63,14 @@ void sprite_change_types(spr_t *spr, const int * types);
 //     spr is the previously loaded sprite.
 //     types is the list of tile types to change.
 
+void sprite_update_type(spr_t *spr, int typeId, int type);
+
 void sprite_change_variations(spr_t *spr, const int * variations);
 // Changes the variations list (AKA, in most cases, changes the animation frame).
 //     spr is the previously loaded sprite.
 //     variations is the list of tile variations to change.
+
+void sprite_update_variation(spr_t *spr, int variationId, int variation);
 
 
 #endif
