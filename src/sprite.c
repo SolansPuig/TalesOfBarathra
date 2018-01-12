@@ -73,7 +73,7 @@ void sprite_change_color(spr_t *spr, int r, int g, int b, int a) {
     if (spr->r != -1) spr->r = r;
     if (spr->g != -1) spr->g = g;
     if (spr->b != -1) spr->b = b;
-    if (spr->a != -1) spr->a = a;
+    if (spr->a != -1) spr->a = a * 2.55;
 }
 
 void sprite_flip(spr_t *spr, flip_t flip) {

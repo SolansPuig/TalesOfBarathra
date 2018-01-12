@@ -14,11 +14,11 @@
 
 #define TILESIZE    16
 
-#define BLACK 0,0,0,255
-#define WHITE 255,255,255,255
-#define RED 255,0,0,255
-#define GREEN 0,255,0,255
-#define BLUE 0,0,255,255
+#define BLACK 0,0,0,100
+#define WHITE 255,255,255,100
+#define RED 255,0,0,100
+#define GREEN 0,255,0,100
+#define BLUE 0,0,255,100
 
 #define MAX_ENTITYS (MAX_PLAYERS + MAX_COMPLEX_IA + MAX_SIMPLE_IA + MAX_PROPS + MAX_TILES)
 

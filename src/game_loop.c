@@ -102,6 +102,8 @@ int main (void) {
 
     int Steve = world_create_npc(knights, 2, 300, 200, 1);
     int Charlie = world_create_npc(knights, 1, 300, 150, 1);
+    entity_change_colors(Steve, 100, 255, 218);
+    entity_change_alpha(Charlie, 80);
 
     for (int x = 0; x < 50; x++) {
         for (int y = 0; y < 50; y++) {
