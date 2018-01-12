@@ -15,6 +15,8 @@ typedef SDL_Texture     tex_t;
 typedef SDL_Rect        rect_t;
 typedef SDL_Color       color_t;
 
+typedef enum { NO_FLIP, FLIP_HORIZONTAL, FLIP_VERTICAL, FLIP_DIAGONAL } flip_t;
+
 typedef struct {
     char *title;
     win_t  *window;
@@ -37,6 +39,8 @@ typedef struct {
     tex_t *texture;
     rect_t src;
     rect_t dst;
+    int rotation;
+    flip_t flip;
     int y;
     int z;
     int r;
@@ -59,12 +63,18 @@ img_t * graphics_load_image(char *filename, int w_tile, int h_tile, int n_sheets
 //      n_sheets_row are the number of sheets (groups of similar images) that the file contains in each row.
 //      w_sheet and h_sheet are the size, in tile-sizes, of every sheet;
 
-void graphics_render_texture(const img_t *img, int src_x, int src_y, int dst_x, int dst_y, int y, int z);
+void graphics_render_texture_modded(const img_t *img, int src_x, int src_y, int dst_x, int dst_y, int y, int z, int rotation, flip_t flip, int r, int g, int b, int a);
 // Adds the image (or the part of it) to the rendering buffer.
 //      img is the image file that must be rendered.
 //      src_x and src_y are the coords, in tile-sizes, of the tile that must be rendered.
 //      dst_x and dst_y are the coords, in pixels, where to draw the top left corner.
 //      y and z are the height and depth of the entity calling this, to calculate which image has to render on top.
+//      rotation a number, in degrees, to rotate the image.
+//      flip is one of { NO_FLIP, FLIP_HORIZONTAL, FLIP_VERTICAL, FLIP_DIAGONAL }.
+//      r is the red value used to mod the original image.
+//      g is the green value used to mod the original image.
+//      b the blue value used to mod the original image.
+//      a the alpha value used to mod the original image.
 
 void graphics_draw_rect(int x0, int y0, int x1, int y1, int z, int r, int g, int b, int a);
 // Add a rectangle at the specified coordinates to the rendering buffer.

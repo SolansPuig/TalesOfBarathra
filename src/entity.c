@@ -169,7 +169,7 @@ void entity_set_view(int id, img_t *img, int sheet, int w_spr, int h_spr) {
     component_view_t *view = &(world->view[id]);
     int types[25] = {0};
     int variations[25] = {0};
-    view->spr = sprite_create(img, w_spr, h_spr, sheet, types, variations);
+    view->spr = sprite_create(img, w_spr, h_spr, sheet, types, variations, 0, 0, WHITE);
 
     world->mask[id] |= COMPONENT_VIEW;
 }
@@ -200,6 +200,20 @@ void entity_update_view_type(int id, int typeId, int type) {
     component_view_t *view = &(world->view[id]);
 
     sprite_update_type(view->spr, typeId, type);
+}
+
+void entity_change_colors(int id, int r, int g, int b) {
+    assert(world->mask[id] != COMPONENT_NONE);
+    component_view_t *view = &(world->view[id]);
+
+    sprite_change_color(view->spr, r, g, b, -1);
+}
+
+void entity_change_alpha(int id, int a) {
+    assert(world->mask[id] != COMPONENT_NONE);
+    component_view_t *view = &(world->view[id]);
+
+    sprite_change_color(view->spr, -1, -1, -1, a);
 }
 
 void entity_destroy_view(int id) {

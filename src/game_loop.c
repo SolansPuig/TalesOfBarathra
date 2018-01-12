@@ -100,12 +100,13 @@ int main (void) {
 
     player = world_create_player(knights, 0, 40, 50, 1);
 
-    world_create_npc(knights, 2, 300, 200, 1);
-    world_create_npc(knights, 1, 300, 150, 1);
+    int Steve = world_create_npc(knights, 2, 300, 200, 1);
+    int Charlie = world_create_npc(knights, 1, 300, 150, 1);
 
     for (int x = 0; x < 50; x++) {
         for (int y = 0; y < 50; y++) {
-            world_create_specific_terrain(terrain, GRASS, x, y, 0);
+            int a = world_create_specific_terrain(terrain, GRASS, x, y, 0);
+            entity_change_colors(a, 190, 190, 190);
         }
     }
 

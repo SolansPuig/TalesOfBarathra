@@ -178,6 +178,16 @@ void entity_set_view_types(int id, int* types);
 
 void entity_update_view_type(int id, int typeId, int type);
 
+void entity_change_colors(int id, int r, int g, int b);
+// Change the color of the sprite.
+//     id is the id of the entity to change the color.
+//      r, g, and b are the red, green and blue values. Use -1 to leave it unaltered.
+
+void entity_change_alpha(int id, int a);
+// Change the alpha of the sprite.
+//     id is the id of the entity to change the alpha.
+//     a is the alpha value. Use -1 to leave it unaltered.
+
 void entity_destroy_view(int id);
 // Releases the memory that sprite occupies.
 //     id is the id of the entity to destroy its view.

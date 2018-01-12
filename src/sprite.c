@@ -1,7 +1,7 @@
 #include <stdbool.h>
 #include "sprite.h"
 
-spr_t * sprite_create(img_t *img, int w_spr, int h_spr, int sheet, const int * types, const int * variations) {
+spr_t * sprite_create(img_t *img, int w_spr, int h_spr, int sheet, const int * types, const int * variations, int rotation, flip_t flip, int r, int g, int b, int a) {
     spr_t *spr = malloc(sizeof(spr_t));
 
     spr->img = img;
@@ -10,6 +10,12 @@ spr_t * sprite_create(img_t *img, int w_spr, int h_spr, int sheet, const int * t
     spr->sheet = sheet;
     memcpy(spr->types, types, sizeof(int) * 25);
     memcpy(spr->variations, variations, sizeof(int) * 25);
+    spr->rotation = rotation;
+    spr->flip = flip;
+    spr->r = r;
+    spr->g = g;
+    spr->b = b;
+    spr->a = a;
 
     return spr;
 }
@@ -38,7 +44,7 @@ void sprite_render(spr_t *spr, int x, int y, int z) {
             int16_t dest_x = (x - (spr->w_spr * img->w_tile / 2) + 1) + (i * img->w_tile);
             int16_t dest_y = (y - (spr->h_spr * img->h_tile / 2) + 1) + (j * img->h_tile);
 
-            graphics_render_texture(img, src_x, src_y, dest_x, dest_y, y, z);
+            graphics_render_texture_modded(img, src_x, src_y, dest_x, dest_y, y, z, spr->rotation, spr->flip, spr->r, spr->g, spr->b, spr->a);
         }
     }
 }
@@ -61,4 +67,19 @@ void sprite_update_type(spr_t *spr, int typeId, int type) {
 
 void sprite_update_variation(spr_t *spr, int variationId, int variation) {
     spr->variations[variationId] = variation;
+}
+
+void sprite_change_color(spr_t *spr, int r, int g, int b, int a) {
+    if (spr->r != -1) spr->r = r;
+    if (spr->g != -1) spr->g = g;
+    if (spr->b != -1) spr->b = b;
+    if (spr->a != -1) spr->a = a;
+}
+
+void sprite_flip(spr_t *spr, flip_t flip) {
+    spr->flip = flip;
+}
+
+void sprite_rotate(spr_t *spr, int rotation) {
+    spr->rotation;
 }
