@@ -38,6 +38,4 @@ int world_create_specific_terrain(img_t * img, terrain_type_t type, int x_relati
 
 int world_create_npc(img_t * img, int sheet, int x, int y, int z);
 
-void world_update_tile(int id);
-
 #endif

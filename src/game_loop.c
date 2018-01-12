@@ -101,23 +101,11 @@ int main (void) {
     player = world_create_player(knights, 0, 40, 50, 1);
 
     world_create_npc(knights, 2, 300, 200, 1);
-
-    int Charlie = world_create_npc(knights, 1, 300, 150, 1);
-    entity_set_speed(Charlie, LEFTDIR, 0.5);
+    world_create_npc(knights, 1, 300, 150, 1);
 
     for (int x = 0; x < 50; x++) {
         for (int y = 0; y < 50; y++) {
-            if (math_random_prob(20)) world_create_specific_terrain(terrain, GRASS, x, y, 0);
-            else world_create_specific_terrain(terrain, DIRT, x, y, 0);
-        }
-    }
-
-    for (int id = 0; id < MAX_ENTITYS; id++) {
-        if (entity_exists(id)) {
-            int type = entity_get_type(id);
-            if (type == TILE) {
-                world_update_tile(id);
-            }
+            world_create_specific_terrain(terrain, GRASS, x, y, 0);
         }
     }
 
