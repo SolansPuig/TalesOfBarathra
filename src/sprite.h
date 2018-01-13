@@ -60,10 +60,11 @@ spr_t * sprite_create(img_t *img, int w_spr, int h_spr, int sheet, const int * t
 
 void sprite_destroy(spr_t * spr); // Free the memory of the sprite.
 
-void sprite_render(spr_t *spr, int x, int y, int z);
+void sprite_render(spr_t *spr, int x, int y, int y2, int z);
 // Renders an sprite. Must be done every frame and for every entity.
 //     spr is the previously loaded sprite.
-//     x, y and z are the coords in pixels where to draw the top left corner.
+//     x and y are the coords in pixels where to draw the top left corner.
+//     y2 and z are for depth buffering.
 
 void sprite_change_sheet(spr_t *spr, int sheet);
 // Changes the sheet (AKA, in most cases, changes the animation frame of a tile).

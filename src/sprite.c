@@ -15,7 +15,7 @@ spr_t * sprite_create(img_t *img, int w_spr, int h_spr, int sheet, const int * t
     spr->r = r;
     spr->g = g;
     spr->b = b;
-    spr->a = a;
+    spr->a = a * 2.55;
 
     return spr;
 }
@@ -24,7 +24,7 @@ void sprite_destroy(spr_t * spr) {
     free(spr);
 }
 
-void sprite_render(spr_t *spr, int x, int y, int z) {
+void sprite_render(spr_t *spr, int x, int y, int y2, int z) {
     int i, j;
     for (i = 0; i < spr->w_spr; i++) {
         for (j = 0; j < spr->h_spr; j++) {
@@ -44,7 +44,7 @@ void sprite_render(spr_t *spr, int x, int y, int z) {
             int16_t dest_x = (x - (spr->w_spr * img->w_tile / 2) + 1) + (i * img->w_tile);
             int16_t dest_y = (y - (spr->h_spr * img->h_tile / 2) + 1) + (j * img->h_tile);
 
-            graphics_render_texture_modded(img, src_x, src_y, dest_x, dest_y, y, z, spr->rotation, spr->flip, spr->r, spr->g, spr->b, spr->a);
+            graphics_render_texture_modded(img, src_x, src_y, dest_x, dest_y, y2, z, spr->rotation, spr->flip, spr->r, spr->g, spr->b, spr->a);
         }
     }
 }

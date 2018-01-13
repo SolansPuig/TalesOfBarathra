@@ -51,8 +51,9 @@ typedef struct {
 
 typedef struct {
     bool solid;
-    uint16_t w;
-    uint16_t h;
+    int w;
+    int h;
+    int ho;
 } component_physics_t;
 
 typedef struct {
@@ -230,6 +231,11 @@ void entity_set_size(int id, int w, int h);
 // Sets the entity's real size (for the collisions).
 //     id is the id of the entity to which to set the size.
 //     w and h are the real size.
+
+void entity_set_height_offset(int id, int ho);
+// Set the offset from the middle of the sprite to where the hitbox starts.
+//     id is the id of the entity to which to set the size.
+//     ho is the heigh offset.
 
 
 // TIMER FUNCTIONS

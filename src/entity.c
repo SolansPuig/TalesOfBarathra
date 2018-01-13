@@ -310,6 +310,13 @@ void entity_set_size(int id, int w, int h) {
     world->mask[id] |= COMPONENT_PHYSICS;
 }
 
+void entity_set_height_offset(int id, int ho) {
+    assert(world->mask[id] != COMPONENT_NONE);
+    component_physics_t *physics = &(world->physics[id]);
+    physics->ho = ho;
+
+    world->mask[id] |= COMPONENT_PHYSICS;
+}
 
 
 // TIMER FUNCTIONS
@@ -464,7 +471,7 @@ void entitys_move() {
         } else {
             // Stop the animation if animation is moving and is not tile
             if ((world->mask[id] & COMPONENT_VIEW) == COMPONENT_VIEW &&
-                world->type[id].type != TILE &&
+                world->type[id].type != TILE && world->type[id].type != PROP &&
                 world->animation[id].type <= BACKWARD) {
                 entity_stop_animation(id);
             }
@@ -483,7 +490,13 @@ void entitys_render() {
             pos = &(world->position[id]);
             view = &(world->view[id]);
 
-            sprite_render(view->spr, pos->x, pos->y, pos->z);
+            if ((world->mask[id] & COMPONENT_PHYSICS) == COMPONENT_PHYSICS) {
+                component_physics_t *phys = &(world->physics[id]);
+                sprite_render(view->spr, pos->x, pos->y - phys->ho, pos->y, pos->z);
+            } else {
+                sprite_render(view->spr, pos->x, pos->y, pos->y, pos->z);
+            }
+
             if (debug) {
                 graphics_draw_point(pos->x, pos->y, pos->z + 1, RED);
 

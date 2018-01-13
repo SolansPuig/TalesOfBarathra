@@ -97,18 +97,27 @@ int main (void) {
     graphics_open_window("Tales of Barathra", 1200, 780);
     img_t *knights = graphics_load_image("assets/knight_factions_1.png", 26, 36, 4, 3, 4);
     img_t *terrain = graphics_load_image("assets/terrain.png", 16, 16, 1, 39, 38);
+    img_t *fire = graphics_load_image("assets/fire.png", 16, 16, 1, 4, 1);
+    img_t *outside = graphics_load_image("assets/outside.png", 16, 16, 1, 52, 24);
+    player = world_create_player(knights, 0, 40, 50, 2);
 
-    player = world_create_player(knights, 0, 40, 50, 1);
-
-    int Steve = world_create_npc(knights, 2, 300, 200, 1);
-    int Charlie = world_create_npc(knights, 1, 300, 150, 1);
+    int Steve = world_create_npc(knights, 2, 300, 200, 2);
+    int Charlie = world_create_npc(knights, 1, 300, 150, 2);
     entity_change_colors(Steve, 100, 255, 218);
     entity_change_alpha(Charlie, 80);
+
+    world_create_fire(fire, 101, 202, 2);
+    world_create_fire(fire, 95, 200, 2);
+    world_create_fire(fire, 103, 196, 2);
+    world_create_prop(outside, CAMPFIRE, 0, 100, 200, 1);
+
+    world_create_prop(outside, TREE, 0, 120, 150, 2);
+    world_create_prop(outside, TREE, 0, 220, 100, 2);
 
     for (int x = 0; x < 50; x++) {
         for (int y = 0; y < 50; y++) {
             int a = world_create_specific_terrain(terrain, GRASS, x, y, 0);
-            entity_change_colors(a, 190, 190, 190);
+            entity_change_colors(a, 220, 220, 220);
         }
     }
 
