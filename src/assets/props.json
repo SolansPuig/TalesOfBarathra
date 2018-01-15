@@ -1,0 +1,131 @@
+{
+    "tree0": {
+        "img": "outdoors.png",
+        "spr_w": 4, "spr_h": 4,
+        "variations": [17, 18, 19, 20, 17, 18, 19, 20, 17, 18, 19, 20, 17, 18, 19, 20],
+        "types": [3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6],
+        "w": 28, "h": 6,
+        "solid": true,
+        "h_off": 25
+    },
+    "tree1": {
+        "img": "outdoors.png",
+        "spr_w": 3, "spr_h": 4,
+        "variations": [25, 26, 27, 25, 26, 27, 25, 26, 27, 25, 26, 27],
+        "types": [3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6],
+        "w": 22, "h": 6,
+        "solid": true,
+        "h_off": 23
+    },
+    "tree2": {
+        "img": "outdoors.png",
+        "spr_w": 3, "spr_h": 4,
+        "variations": [17, 18, 19, 17, 18, 19, 17, 18, 19, 17, 18, 19],
+        "types": [7, 7, 7, 8, 8, 8, 9, 9, 9, 10, 10, 10],
+        "w": 22, "h": 6,
+        "solid": true,
+        "h_off": 23
+    },
+    "tree3": {
+        "img": "outdoors.png",
+        "spr_w": 2, "spr_h": 4,
+        "variations": [20, 21, 20, 21, 20, 21, 20, 21],
+        "types": [7, 7, 8, 8, 9, 9, 10, 10],
+        "w": 19, "h": 6,
+        "solid": true,
+        "h_off": 20
+    },
+    "tree4": {
+        "img": "outdoors.png",
+        "spr_w": 2, "spr_h": 4,
+        "variations": [22, 23, 22, 23, 22, 23, 22, 23],
+        "types": [7, 7, 8, 8, 9, 9, 10, 10],
+        "w": 16, "h": 6,
+        "solid": true,
+        "h_off": 23
+    },
+    "tree5": {
+        "img": "outdoors.png",
+        "spr_w": 3, "spr_h": 4,
+        "variations": [24, 25, 26, 24, 25, 26, 24, 25, 26, 24, 25, 26],
+        "types": [7, 7, 7, 8, 8, 8, 9, 9, 9, 10, 10, 10],
+        "w": 24, "h": 6,
+        "solid": true,
+        "h_off": 28
+    },
+    "tree6": {
+        "img": "outdoors.png",
+        "spr_w": 3, "spr_h": 4,
+        "variations": [27, 28, 29, 27, 28, 29, 27, 28, 29, 27, 28, 29],
+        "types": [7, 7, 7, 8, 8, 8, 9, 9, 9, 10, 10, 10],
+        "w": 24, "h": 6,
+        "solid": true,
+        "h_off": 28
+    },
+    "tree7": {
+        "img": "outdoors.png",
+        "spr_w": 3, "spr_h": 4,
+        "variations": [30, 31, 32, 30, 31, 32, 30, 31, 32, 30, 31, 32],
+        "types": [7, 7, 7, 8, 8, 8, 9, 9, 9, 10, 10, 10],
+        "w": 24, "h": 6,
+        "solid": true,
+        "h_off": 28
+    },
+    "tree8": {
+        "img": "outdoors.png",
+        "spr_w": 3, "spr_h": 4,
+        "variations": [17, 18, 19, 17, 18, 19, 17, 18, 19, 17, 18, 19],
+        "types": [11, 11, 11, 12, 12, 12, 13, 13, 13, 14, 14, 14],
+        "w": 22, "h": 6,
+        "solid": true,
+        "h_off": 23
+    },
+    "tree9": {
+        "img": "outdoors.png",
+        "spr_w": 2, "spr_h": 4,
+        "variations": [20, 21, 20, 21, 20, 21, 20, 21],
+        "types": [11, 11, 12, 12, 13, 13, 14, 14],
+        "w": 19, "h": 6,
+        "solid": true,
+        "h_off": 20
+    },
+    "tree10": {
+        "img": "outdoors.png",
+        "spr_w": 2, "spr_h": 4,
+        "variations": [22, 23, 22, 23, 22, 23, 22, 23],
+        "types": [11, 11, 12, 12, 13, 13, 14, 14],
+        "w": 16, "h": 6,
+        "solid": true,
+        "h_off": 23
+    },
+    "tree11": {
+        "img": "outdoors.png",
+        "spr_w": 2, "spr_h": 3,
+        "variations": [24, 25, 24, 25, 24, 25],
+        "types": [12, 12, 13, 13, 14, 14],
+        "w": 16, "h": 6,
+        "solid": true,
+        "h_off": 23
+    },
+    "campfire": {
+        "img": "outdoors.png",
+        "spr_w": 3, "spr_h": 2,
+        "variations": [1, 2, 3, 1, 2, 3],
+        "types": [18, 18, 18, 19, 19, 19],
+        "w": 26, "h": 22,
+        "solid": false,
+        "h_off": -3
+    },
+    "fire": {
+        "img": "fire.png",
+        "spr_w": 1, "spr_h": 1,
+        "variations": [0],
+        "types": [0],
+        "w": 12, "h": 6,
+        "solid": true,
+        "h_off": 5,
+        "anim_cycle": [0, 1, 2, 3],
+        "anim_speed": 30,
+        "anim_frame": -1
+    }
+}

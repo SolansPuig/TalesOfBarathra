@@ -1,7 +1,76 @@
 #include "world.h"
 #include "math.h"
+#include "frozen.h"
 
 static int anim_cycle[4] = {0, 1, 2, 1};
+
+static img_t *knights;;
+static img_t *fire;
+static img_t *outside;
+static img_t *terrain;
+
+
+int load(int type) {
+    switch (type) {
+        case PLAYER: {
+            if (knights == NULL) knights = graphics_load_image("assets/knight_factions_1.png", 26, 36, 4, 3, 4);
+            return world_create_player(knights, 0, 40, 50, 2);
+            break;
+        }
+        case PROP: {
+            if (fire == NULL) fire = graphics_load_image("assets/fire.png", 16, 16, 1, 4, 1);
+            if (outside == NULL) outside = graphics_load_image("assets/outside.png", 16, 16, 1, 52, 24);
+            world_create_prop(fire, "fire", 101, 202, 2);
+            world_create_prop(fire, "fire", 95, 200, 2);
+            world_create_prop(fire, "fire", 103, 196, 2);
+            world_create_prop(outside, "campfire", 100, 200, 1);
+
+            world_create_prop(outside, "tree0", 120, 150, 2);
+            world_create_prop(outside, "abba", 220, 100, 2);
+            break;
+        }
+        case COMPLEX_IA: {
+            if (knights == NULL) knights = graphics_load_image("assets/knight_factions_1.png", 26, 36, 4, 3, 4);
+            int Steve = world_create_npc(knights, 2, 300, 200, 2);
+            int Charlie = world_create_npc(knights, 1, 300, 150, 2);
+            entity_change_colors(Steve, 100, 255, 218);
+            entity_change_alpha(Charlie, 80);
+            break;
+        }
+        case TILE: {
+            if (terrain == NULL) terrain = graphics_load_image("assets/terrain.png", 16, 16, 1, 39, 38);
+            for (int x = 0; x < 50; x++) {
+                for (int y = 0; y < 50; y++) {
+                    int a = world_create_specific_terrain(terrain, GRASS, x, y, 0);
+                    entity_change_colors(a, 220, 220, 220);
+                }
+            }
+        }
+    }
+
+    return 0;
+}
+
+void unload(int type) {
+    for (int i = 0; i < MAX_ENTITYS; i++) {
+        if (entity_exists(i) && entity_get_type(i) == type) entity_destroy(i);
+    }
+}
+
+void reload(int type) {
+    unload(type);
+    load(type);
+}
+
+void scan_int_array(const char *str, int len, void *user_data) {
+    struct json_token t;
+    for (int i = 0; json_scanf_array_elem(str, len, "", i, &t) > 0; i++) {
+        char s[10];
+        snprintf(s, sizeof(s), "%.*s\n", t.len, t.ptr);
+        int n = atoi(s);
+        ((int *)user_data)[i] = n;
+    }
+}
 
 int world_create_player(img_t * img, int sheet, int x, int y, int z) {
     int player = entity_create(x, x, z, PLAYER);
@@ -134,53 +203,36 @@ int world_create_npc(img_t * img, int sheet, int x, int y, int z) {
     return npc;
 }
 
-int world_create_fire(img_t * img, int x, int y, int z) {
-    int fire = entity_create(x, y, z, PROP);
-    entity_set_view(fire, img, 0, 1, 1);
-    entity_set_solid(fire, true);
-    entity_set_size(fire, 12, 6);
-    entity_set_height_offset(fire, 5);
-    int fire_cycle[4] = {0, 1, 2, 3};
-    entity_init_animation(fire, math_random(0, 4), fire_cycle, 30);
-    entity_set_animation(fire, FORWARD);
-
-    return fire;
-}
-
-int world_create_prop(img_t * img, int type, int variant, int x, int y, int z) {
+int world_create_prop(img_t * img, char * type, int x, int y, int z) {
     int prop = entity_create(x, y, z, PROP);
 
-    switch (type) {
-        case TREE: {
-            if (variant == 0) {
-                entity_set_view(prop, img, 0, 4, 4);
-                int variations[16] = {17, 18, 19, 20, 17, 18, 19, 20, 17, 18, 19, 20, 17, 18, 19, 20};
-                int types[16] = {3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6};
-                entity_set_view_variations(prop, variations);
-                entity_set_view_types(prop, types);
+    char * str = json_fread("assets/props.json");
+    char template[] = "{img: %s, spr_w: %d, spr_h:%d, variations: %M, types: %M, w: %d, h: %d, solid: %B, h_off: %d, anim_cycle: %M, anim_speed: %d, anim_frame: %d}";
+    char filter[256];
+    snprintf(filter, sizeof(filter), "{%s: %s}", type, template);
 
-                entity_set_size(prop, 18, 6);
-                entity_set_solid(prop, true);
-                entity_set_height_offset(prop, 25);
-                break;
-            }
-        }
+    char img_name[32];
+    int spr_w, spr_h, w, h, h_off, anim_speed, anim_frame;
+    int variations[25];
+    int types[25];
+    int anim_cycle[] = {-1, -1, -1, -1};
+    bool solid;
 
-        case CAMPFIRE: {
-            if (variant == 0) {
-                entity_set_view(prop, img, 0, 3, 2);
-                int variations[6] = {1, 2, 3, 1, 2, 3};
-                int types[6] = {18, 18, 18, 19, 19, 19};
-                entity_set_view_variations(prop, variations);
-                entity_set_view_types(prop, types);
+    json_scanf(str, strlen(str), filter, &img_name, &spr_w, &spr_h, scan_int_array, variations, scan_int_array, types, &w, &h, &solid, &h_off, scan_int_array, anim_cycle, &anim_speed, &anim_frame);
+    free(str);
 
-                entity_set_size(prop, 26, 22);
-                entity_set_height_offset(prop, -3);
-                break;
-            }
-        }
+    entity_set_view(prop, img, 0, spr_w, spr_h);
+    entity_set_view_variations(prop, variations);
+    entity_set_view_types(prop, types);
+    entity_set_size(prop, w, h);
+    entity_set_solid(prop, solid);
+    entity_set_height_offset(prop, h_off);
+
+    if (anim_cycle[0] != -1) {
+        if (anim_frame == -1) anim_frame = math_random(0, 4);
+        entity_init_animation(prop, anim_frame, anim_cycle, anim_speed);
+        entity_set_animation(prop, FORWARD);
     }
 
-    entity_set_variant(prop, type);
     return prop;
 }
