@@ -1,6 +1,7 @@
 #include "world.h"
 #include "math.h"
 #include "frozen.h"
+#include "message.h"
 
 static int anim_cycle[4] = {0, 1, 2, 1};
 
@@ -9,14 +10,8 @@ static img_t *fire;
 static img_t *outside;
 static img_t *terrain;
 
-
 int load(int type) {
     switch (type) {
-        case PLAYER: {
-            if (knights == NULL) knights = graphics_load_image("assets/knight_factions_1.png", 26, 36, 4, 3, 4);
-            return world_create_player(knights, 0, 40, 50, 2);
-            break;
-        }
         case PROP: {
             if (fire == NULL) fire = graphics_load_image("assets/fire.png", 16, 16, 1, 4, 1);
             if (outside == NULL) outside = graphics_load_image("assets/outside.png", 16, 16, 1, 52, 24);
@@ -26,15 +21,13 @@ int load(int type) {
             world_create_prop(outside, "campfire", 100, 200, 1);
 
             world_create_prop(outside, "tree0", 120, 150, 2);
-            world_create_prop(outside, "abba", 220, 100, 2);
+            world_create_prop(outside, "tree5", 220, 100, 2);
             break;
         }
         case COMPLEX_IA: {
             if (knights == NULL) knights = graphics_load_image("assets/knight_factions_1.png", 26, 36, 4, 3, 4);
-            int Steve = world_create_npc(knights, 2, 300, 200, 2);
-            int Charlie = world_create_npc(knights, 1, 300, 150, 2);
-            entity_change_colors(Steve, 100, 255, 218);
-            entity_change_alpha(Charlie, 80);
+            world_create_npc(knights, 2, 300, 200, 2);
+            world_create_npc(knights, 1, 300, 170, 2);
             break;
         }
         case TILE: {
@@ -62,7 +55,7 @@ void reload(int type) {
     load(type);
 }
 
-void scan_int_array(const char *str, int len, void *user_data) {
+static void scan_int_array(const char *str, int len, void *user_data) {
     struct json_token t;
     for (int i = 0; json_scanf_array_elem(str, len, "", i, &t) > 0; i++) {
         char s[10];
@@ -70,17 +63,6 @@ void scan_int_array(const char *str, int len, void *user_data) {
         int n = atoi(s);
         ((int *)user_data)[i] = n;
     }
-}
-
-int world_create_player(img_t * img, int sheet, int x, int y, int z) {
-    int player = entity_create(x, x, z, PLAYER);
-    entity_set_view(player, img, sheet, 1, 1);
-    entity_set_solid(player, true);
-    entity_set_size(player, 12, 6);
-    entity_set_height_offset(player, 15);
-    entity_init_animation(player, 1, anim_cycle, 30);
-
-    return player;
 }
 
 int world_create_terrain(img_t * img, int sheet, int * variations, int * types, int x_relative, int y_relative, int z) {
@@ -187,7 +169,6 @@ int world_create_specific_terrain(img_t * img, terrain_type_t type, int x_relati
     }
 
     int tile = world_create_terrain(img, 0, variations, types, x_relative, y_relative, 0);
-    entity_set_variant(tile, type);
 
     return tile;
 }
@@ -199,6 +180,7 @@ int world_create_npc(img_t * img, int sheet, int x, int y, int z) {
     entity_set_size(npc, 12, 6);
     entity_set_height_offset(npc, 15);
     entity_init_animation(npc, 1, anim_cycle, 30);
+    entity_set_on_collide(npc, "");
 
     return npc;
 }
@@ -207,7 +189,7 @@ int world_create_prop(img_t * img, char * type, int x, int y, int z) {
     int prop = entity_create(x, y, z, PROP);
 
     char * str = json_fread("assets/props.json");
-    char template[] = "{img: %s, spr_w: %d, spr_h:%d, variations: %M, types: %M, w: %d, h: %d, solid: %B, h_off: %d, anim_cycle: %M, anim_speed: %d, anim_frame: %d}";
+    char template[] = "{img: %s, spr_w: %d, spr_h:%d, variations: %M, types: %M, w: %d, h: %d, solid: %B, h_off: %d, anim_cycle: %M, anim_speed: %d, anim_frame: %d, on_collide: %s}";
     char filter[256];
     snprintf(filter, sizeof(filter), "{%s: %s}", type, template);
 
@@ -215,10 +197,13 @@ int world_create_prop(img_t * img, char * type, int x, int y, int z) {
     int spr_w, spr_h, w, h, h_off, anim_speed, anim_frame;
     int variations[25];
     int types[25];
+    char on_collide[PAYLOAD_SIZE];
     int anim_cycle[] = {-1, -1, -1, -1};
     bool solid;
 
-    json_scanf(str, strlen(str), filter, &img_name, &spr_w, &spr_h, scan_int_array, variations, scan_int_array, types, &w, &h, &solid, &h_off, scan_int_array, anim_cycle, &anim_speed, &anim_frame);
+    strcpy(on_collide, "");
+
+    json_scanf(str, strlen(str), filter, &img_name, &spr_w, &spr_h, scan_int_array, variations, scan_int_array, types, &w, &h, &solid, &h_off, scan_int_array, anim_cycle, &anim_speed, &anim_frame, &on_collide);
     free(str);
 
     entity_set_view(prop, img, 0, spr_w, spr_h);
@@ -227,11 +212,12 @@ int world_create_prop(img_t * img, char * type, int x, int y, int z) {
     entity_set_size(prop, w, h);
     entity_set_solid(prop, solid);
     entity_set_height_offset(prop, h_off);
+    entity_set_on_collide(prop, on_collide);
 
     if (anim_cycle[0] != -1) {
         if (anim_frame == -1) anim_frame = math_random(0, 4);
         entity_init_animation(prop, anim_frame, anim_cycle, anim_speed);
-        entity_set_animation(prop, FORWARD);
+        message_send(-1, prop, ANIMATE, "FORWARD");
     }
 
     return prop;

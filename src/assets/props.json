@@ -126,6 +126,7 @@
         "h_off": 5,
         "anim_cycle": [0, 1, 2, 3],
         "anim_speed": 30,
-        "anim_frame": -1
+        "anim_frame": -1,
+        "on_collide": "DAMAGE:FIRE,5"
     }
 }

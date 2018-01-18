@@ -1,11 +1,12 @@
 #include <stdio.h>
 #include <stdbool.h>
-#include <time.h>
+#include <unistd.h>
 #include "globals.h"
 #include "sprite.h"
 #include "entity.h"
 #include "world.h"
 #include "math.h"
+#include "message.h"
 
 static int player;
 static bool done;
@@ -42,19 +43,19 @@ void get_input() {
                     break;
                 }
                 case SDLK_UP: {
-                    entity_set_speed(player, UPDIR, 1);
+                    message_send(-1, 6, MOVE, "UPDIR, 1");
                     break;
                 }
                 case SDLK_DOWN: {
-                    entity_set_speed(player, DOWNDIR, 1);
+                    message_send(-1, 6, MOVE, "DOWNDIR, 1");
                     break;
                 }
                 case SDLK_LEFT: {
-                    entity_set_speed(player, LEFTDIR, 1);
+                    message_send(-1, 6, MOVE, "LEFTDIR, 1");
                     break;
                 }
                 case SDLK_RIGHT: {
-                    entity_set_speed(player, RIGHTDIR, 1);
+                    message_send(-1, 6, MOVE, "RIGHTDIR, 1");
                     break;
                 }
             }
@@ -63,19 +64,19 @@ void get_input() {
             SDL_Keycode key = event.key.keysym.sym;
             switch (key) {
                 case SDLK_UP: {
-                    entity_stop_speed(player, UPDIR);
+                    message_send(-1, 6, STOP, "UPDIR");
                     break;
                 }
                 case SDLK_DOWN: {
-                    entity_stop_speed(player, DOWNDIR);
+                    message_send(-1, 6, STOP, "DOWNDIR");
                     break;
                 }
                 case SDLK_LEFT: {
-                    entity_stop_speed(player, LEFTDIR);
+                    message_send(-1, 6, STOP, "LEFTDIR");
                     break;
                 }
                 case SDLK_RIGHT: {
-                    entity_stop_speed(player, RIGHTDIR);
+                    message_send(-1, 6, STOP, "RIGHTDIR");
                     break;
                 }
             }
@@ -86,6 +87,9 @@ void get_input() {
 void update() {
     // Update all the timers
     entitys_timer();
+
+    // Read all the messages
+    entitys_read_messages();
 
     // Move all the entities
     entitys_move();
@@ -105,10 +109,8 @@ void render() {
 int main (void) {
     math_random_seed();
     debug = false;
-    world_create();
     graphics_open_window("Tales of Barathra", 1200, 780);
 
-    player = load(PLAYER);
     load(COMPLEX_IA);
     load(PROP);
     load(TILE);
@@ -128,7 +130,6 @@ int main (void) {
             update();
             lag -= MS_PER_UPDATE;
         }
-
         render();
     }
 

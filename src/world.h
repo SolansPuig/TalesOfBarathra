@@ -30,21 +30,11 @@ typedef enum {
     CURSED_TILE
 } terrain_type_t;
 
-typedef enum {
-    TREE,
-    TRUNK,
-    SHRUB,
-    CAMPFIRE,
-    STORAGE
-} props_type_t;
-
 int load(int type);
 
 void unload(int type);
 
 void reload(int type);
-
-int world_create_player(img_t * img, int sheet, int x, int y, int z);
 
 int world_create_terrain(img_t * img, int sheet, int * variations, int * types, int x_relative, int y_relative, int z);
 
