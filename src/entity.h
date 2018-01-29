@@ -19,11 +19,11 @@ void entity_set_view_types(int id, int * types);
 void entity_change_colors(int id, int r, int g, int b);
 void entity_change_alpha(int id, int a);
 
-void entity_init_animation(int id, int frame, int * anim_cycle, int speed);
+void entity_init_animation(int id, int frame, int * anim_cycle, int speed, bool animated_on_move);
 void entity_set_solid(int id, bool solid);
 void entity_set_size(int id, int w, int h);
 void entity_set_height_offset(int id, int ho);
-void entity_set_on_collide(int id, char * on_collide);
+void entity_set_on_collide(int id, message_types_t on_collide_action, char * on_collide_props);
 
 // SYSTEMS
 void entitys_timer();

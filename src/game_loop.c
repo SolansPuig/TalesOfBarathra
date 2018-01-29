@@ -43,19 +43,19 @@ void get_input() {
                     break;
                 }
                 case SDLK_UP: {
-                    message_send(-1, 6, MOVE, "UPDIR, 1");
+                    message_send(-1, 0, MOVE, "UPDIR, 1");
                     break;
                 }
                 case SDLK_DOWN: {
-                    message_send(-1, 6, MOVE, "DOWNDIR, 1");
+                    message_send(-1, 0, MOVE, "DOWNDIR, 1");
                     break;
                 }
                 case SDLK_LEFT: {
-                    message_send(-1, 6, MOVE, "LEFTDIR, 1");
+                    message_send(-1, 0, MOVE, "LEFTDIR, 1");
                     break;
                 }
                 case SDLK_RIGHT: {
-                    message_send(-1, 6, MOVE, "RIGHTDIR, 1");
+                    message_send(-1, 0, MOVE, "RIGHTDIR, 1");
                     break;
                 }
             }
@@ -64,19 +64,19 @@ void get_input() {
             SDL_Keycode key = event.key.keysym.sym;
             switch (key) {
                 case SDLK_UP: {
-                    message_send(-1, 6, STOP, "UPDIR");
+                    message_send(-1, 0, STOP, "UPDIR");
                     break;
                 }
                 case SDLK_DOWN: {
-                    message_send(-1, 6, STOP, "DOWNDIR");
+                    message_send(-1, 0, STOP, "DOWNDIR");
                     break;
                 }
                 case SDLK_LEFT: {
-                    message_send(-1, 6, STOP, "LEFTDIR");
+                    message_send(-1, 0, STOP, "LEFTDIR");
                     break;
                 }
                 case SDLK_RIGHT: {
-                    message_send(-1, 6, STOP, "RIGHTDIR");
+                    message_send(-1, 0, STOP, "RIGHTDIR");
                     break;
                 }
             }

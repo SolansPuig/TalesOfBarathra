@@ -179,8 +179,8 @@ int world_create_npc(img_t * img, int sheet, int x, int y, int z) {
     entity_set_solid(npc, true);
     entity_set_size(npc, 12, 6);
     entity_set_height_offset(npc, 15);
-    entity_init_animation(npc, 1, anim_cycle, 30);
-    entity_set_on_collide(npc, "");
+    entity_init_animation(npc, 1, anim_cycle, 30, true);
+    entity_set_on_collide(npc, NONE, "");
 
     return npc;
 }
@@ -197,14 +197,26 @@ int world_create_prop(img_t * img, char * type, int x, int y, int z) {
     int spr_w, spr_h, w, h, h_off, anim_speed, anim_frame;
     int variations[25];
     int types[25];
-    char on_collide[PAYLOAD_SIZE];
+    char on_collide[PAYLOAD_SIZE + 10];
     int anim_cycle[] = {-1, -1, -1, -1};
     bool solid;
 
     strcpy(on_collide, "");
 
     json_scanf(str, strlen(str), filter, &img_name, &spr_w, &spr_h, scan_int_array, variations, scan_int_array, types, &w, &h, &solid, &h_off, scan_int_array, anim_cycle, &anim_speed, &anim_frame, &on_collide);
-    free(str);
+
+    message_types_t collision_type;
+    char on_collide_props[PAYLOAD_SIZE];
+
+    if (strcmp(on_collide, "") != 0) {
+        char *token;
+        token = strtok(on_collide, ":");
+        if (strcmp(token, "DAMAGE") == 0) collision_type = DAMAGE;
+        token = strtok(NULL, ":");
+        strcpy(on_collide_props, token);
+    } else {
+        collision_type = NONE;
+    }
 
     entity_set_view(prop, img, 0, spr_w, spr_h);
     entity_set_view_variations(prop, variations);
@@ -212,11 +224,11 @@ int world_create_prop(img_t * img, char * type, int x, int y, int z) {
     entity_set_size(prop, w, h);
     entity_set_solid(prop, solid);
     entity_set_height_offset(prop, h_off);
-    entity_set_on_collide(prop, on_collide);
+    entity_set_on_collide(prop, collision_type, on_collide_props);
 
     if (anim_cycle[0] != -1) {
         if (anim_frame == -1) anim_frame = math_random(0, 4);
-        entity_init_animation(prop, anim_frame, anim_cycle, anim_speed);
+        entity_init_animation(prop, anim_frame, anim_cycle, anim_speed, false);
         message_send(-1, prop, ANIMATE, "FORWARD");
     }
 
